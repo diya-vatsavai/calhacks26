@@ -64,7 +64,7 @@ export function AvailabilityPicker({ value, onChange, large }: { value: Set<stri
                       className={cn(
                         "w-full rounded-lg border transition",
                         large ? "h-12" : "h-8",
-                        on ? "border-sage-600 bg-sage-500" : "border-ink-900/10 bg-white hover:bg-sage-50",
+                        on ? "border-[#3f87d2] bg-[#6bb1f3]" : "border-[#111d3a]/10 bg-white hover:bg-[#f0f7ff]",
                       )}
                     />
                   </td>

@@ -23,12 +23,12 @@ export default function SeniorHome() {
     {
       label: "Call a Buddy",
       icon: Phone,
-      cls: "bg-terra-400 text-white hover:bg-terra-500",
+      cls: "bg-[#6bb1f3] text-[#111d3a] hover:bg-[#3f87d2]",
       onClick: buddies?.length === 1 ? () => callNow(buddies[0].relationshipId) : undefined,
       href: buddies?.length === 1 ? undefined : "/senior/friends",
       sub: buddies?.length === 1 ? `Call ${firstName(buddies[0].buddy.name)} now` : "Choose a friend to call",
     },
-    { label: "Schedule a Conversation", icon: CalendarPlus, cls: "bg-sage-600 text-white hover:bg-sage-700", href: "/senior/friends", sub: "Pick a time that suits you" },
+    { label: "Schedule a Conversation", icon: CalendarPlus, cls: "bg-[#fff7d1] text-[#111d3a] hover:bg-[#ffefa1]", href: "/senior/friends", sub: "Pick a time that suits you" },
     { label: "My Memory Book", icon: BookHeart, cls: "bg-gold-300 text-ink-900 hover:bg-gold-400", href: "/senior/memories", sub: memories?.total ? `${memories.total} memories` : "Your stories, kept safe" },
     { label: "My Friends", icon: Users, cls: "bg-white text-ink-900 hover:bg-cream-50 border-2 border-ink-900/10", href: "/senior/friends", sub: buddies?.length ? `${buddies.length} ${buddies.length === 1 ? "friend" : "friends"}` : "Meet someone new" },
   ];

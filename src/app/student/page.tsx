@@ -120,7 +120,7 @@ export default function StudentHome() {
                 <Sparkles className="size-4 text-sage-600 transition group-hover:scale-110" />
               </Link>
             ))}
-            <Button asChild className="mt-2 w-full bg-[#5fc088] text-[#111d3a] hover:bg-[#42aa70]"><Link href="/student/practice"><Mic2 /> Open Practice Studio</Link></Button>
+            <Button asChild className="mt-2 w-full bg-[#6bb1f3] text-[#111d3a] hover:bg-[#3f87d2]"><Link href="/student/practice"><Mic2 /> Open Practice Studio</Link></Button>
           </CardContent>
         </Card>
       </section>
@@ -137,7 +137,7 @@ export default function StudentHome() {
           </div>
           <span className="mt-5 inline-flex items-center gap-2 font-bold text-[#111d3a]">Open feedback <ArrowRight className="size-4 transition group-hover:translate-x-1" /></span>
         </Link>
-        <Link href="/student/progress" className="group rounded-[1.5rem] border-2 border-[#111d3a]/10 bg-[#9ae2b6] p-6 transition hover:-translate-y-0.5 hover:shadow-lift">
+        <Link href="/student/progress" className="group rounded-[1.5rem] border-2 border-[#111d3a]/10 bg-[#fff7d1] p-6 transition hover:-translate-y-0.5 hover:shadow-lift">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#314267]">Look back</p>
