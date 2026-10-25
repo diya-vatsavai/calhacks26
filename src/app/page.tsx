@@ -40,7 +40,7 @@ export default function Landing() {
             </Link>
             <Link
               href="/signin?mode=signup&role=senior"
-              className="group inline-flex h-14 items-center justify-center gap-3 rounded-full bg-[#5fc088] px-7 text-base font-semibold text-[#111d3a] shadow-lift transition hover:bg-[#42aa70]"
+              className="group inline-flex h-14 items-center justify-center gap-3 rounded-full bg-[#6bb1f3] px-7 text-base font-semibold text-[#111d3a] shadow-lift transition hover:bg-[#3f87d2]"
             >
               <HeartHandshake className="size-5" /> I&apos;m here to connect
               <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
@@ -52,8 +52,8 @@ export default function Landing() {
         {/* Illustration: a friendship in three moments */}
         <div className="relative h-[460px] animate-rise [animation-delay:120ms]">
           <Pip size="lg" className="absolute right-10 top-0 z-10" />
-          <div className="absolute -right-24 -top-16 size-[420px] rounded-full bg-sage-200/60 blur-3xl" />
-          <div className="absolute -bottom-10 left-0 size-[300px] rounded-full bg-terra-200/50 blur-3xl" />
+          <div className="absolute -right-24 -top-16 size-[420px] rounded-full bg-[#d6ecff] blur-3xl" />
+          <div className="absolute -bottom-10 left-0 size-[300px] rounded-full bg-[#fff7d1] blur-3xl" />
 
           <div className="absolute left-2 top-4 w-72 rotate-[-3deg] rounded-[1.5rem] bg-white p-5 shadow-lift">
             <div className="flex items-center gap-3">
@@ -64,7 +64,7 @@ export default function Landing() {
                 <p className="text-xs text-ink-500">92% match · gardening, the coast</p>
               </div>
             </div>
-            <p className="mt-3 rounded-xl bg-sage-50 p-3 text-[13px] leading-snug text-sage-800">
+            <p className="mt-3 rounded-xl bg-[#d6ecff] p-3 text-[13px] leading-snug text-[#245993]">
               “growing roses” connects with “gardening and house plants”
             </p>
           </div>
@@ -90,17 +90,20 @@ export default function Landing() {
       </section>
 
       {/* How it works */}
-      <section id="how" className="border-y border-ink-900/[0.06] bg-cream-50/70 py-20">
+      <section id="how" className="border-y-2 border-[#111d3a]/10 bg-white py-20">
         <div className="mx-auto max-w-6xl px-6">
-          <h2 className="max-w-2xl font-display text-4xl font-semibold tracking-tight">Not one conversation. A friendship that remembers.</h2>
-          <p className="mt-3 max-w-2xl text-ink-600">Most practice apps forget you the moment the call ends. Kindred keeps the thread — so every call builds on the last.</p>
+          <div className="max-w-3xl">
+            <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#3f87d2]">How Kindred works</p>
+            <h2 className="mt-2 max-w-2xl text-5xl font-bold leading-tight tracking-tight text-[#111d3a]">Not one conversation.<br /><span className="text-[#3f87d2]">A friendship that remembers.</span></h2>
+            <p className="mt-4 max-w-2xl text-lg leading-relaxed text-[#314267]">Small steps, real people, and a little help from Pip. Every call makes the next one feel easier.</p>
+          </div>
           <div className="mt-12 grid gap-5 md:grid-cols-3">
             {[
-              { icon: HeartHandshake, title: "Matched by what you love", body: "We understand that “growing roses” and “gardening” belong together, and find time slots that work across time zones.", tone: "bg-sage-100 text-sage-700" },
-              { icon: CalendarHeart, title: "Talk, face to face", body: "Schedule weekly calls and join with one click — right in the browser. Recording only ever happens if you both say yes.", tone: "bg-terra-100 text-terra-600" },
-              { icon: BookHeart, title: "Grow & remember", body: "Students get kind, specific feedback and spoken practice. Seniors get an editable Memory Book of the stories they told.", tone: "bg-gold-100 text-gold-500" },
+              { icon: HeartHandshake, title: "Find your people", body: "We connect you with someone who enjoys the same things, then help you find a time that works.", tone: "bg-[#d6ecff] text-[#245993]" },
+              { icon: CalendarHeart, title: "Take it one step at a time", body: "Schedule a weekly conversation and join in your browser. Recording only happens if both people say yes.", tone: "bg-[#fff7d1] text-[#6e5708]" },
+              { icon: BookHeart, title: "Keep the thread going", body: "Practice, feedback, and shared memories make each conversation feel more familiar than the last.", tone: "bg-[#111d3a] text-white" },
             ].map((c) => (
-              <div key={c.title} className="rounded-[1.5rem] bg-white p-7 shadow-soft">
+              <div key={c.title} className="rounded-[1.75rem] border-2 border-[#111d3a]/10 bg-[#f8fbff] p-7 shadow-[0_6px_0_#d6ecff]">
                 <span className={`flex size-12 items-center justify-center rounded-2xl ${c.tone}`}><c.icon className="size-6" /></span>
                 <h3 className="mt-5 font-display text-xl font-semibold">{c.title}</h3>
                 <p className="mt-2 leading-relaxed text-ink-600">{c.body}</p>
