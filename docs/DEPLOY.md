@@ -28,7 +28,7 @@ npm run seed:prod              # demo accounts (password: kindred-demo-2026)
 ### 2. Create the Render service
 
 1. Sign in at https://dashboard.render.com and connect GitHub.
-2. **New → Blueprint**, pick the `calhacks26` repo. Render reads `render.yaml` (branch `ver-2`, Starter plan, Node 22, `npm ci && npm run build`, `npm start`).
+2. **New → Blueprint**, pick the `calhacks26` repo. Render reads `render.yaml` from `main` (deploys branch `main`, Starter plan, Node 22, `npm ci && npm run build`, `npm start`).
 3. Render asks for the variables marked `sync: false`. Copy them from `.env.production.local`:
 
 | Variable | Where it's used | Value |
@@ -59,7 +59,7 @@ The first visit to **Find a buddy** builds the `kindred-prod` Moss index (~20 s,
 
 ## Updating
 
-- **Frontend / API routes:** push to `ver-2` → Render auto-deploys.
+- **Frontend / API routes:** merge into `main` → Render auto-deploys.
 - **Backend (`convex/`):** `npm run deploy:convex` (Render does not deploy Convex).
 - **Demo rehearsal on production:** `npx convex run --prod seed:resetDemo`.
 
