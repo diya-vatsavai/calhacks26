@@ -83,8 +83,7 @@ export function MatchCard({ s, big }: { s: Suggestion; big?: boolean }) {
   const first = firstName(p.name);
   const [whyOpen, setWhyOpen] = React.useState(false);
   // Their interests that matched one of yours — same threshold the matching route uses for a "real" match.
-  const matchedPairs = s.sharedPairs.filter((sp) => sp.similarity >= 0.28);
-  const shared = new Set(matchedPairs.map((sp) => sp.theirs));
+  const shared = new Set(s.sharedPairs.filter((sp) => sp.similarity >= 0.28).map((sp) => sp.theirs));
   const timeFit = s.availabilityScore >= 0.8 ? "lots of overlapping free time" : s.availabilityScore >= 0.3 ? "some overlapping free time" : "no shared free time yet";
   const shortReason = shared.size
     ? `${shared.size} shared ${shared.size === 1 ? "interest" : "interests"} · ${timeFit}`
@@ -120,7 +119,10 @@ export function MatchCard({ s, big }: { s: Suggestion; big?: boolean }) {
           )}
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {s.interests.slice(0, 5).map((i) => (
+          {[...s.interests]
+            .sort((a, b) => Number(shared.has(b)) - Number(shared.has(a))) // shared ones first
+            .slice(0, 5)
+            .map((i) => (
             <Badge key={i} variant={shared.has(i) ? "default" : "muted"} className={big ? "text-sm" : ""}>
               {shared.has(i) && <Check className="size-3" />}
               {i}
@@ -144,27 +146,7 @@ export function MatchCard({ s, big }: { s: Suggestion; big?: boolean }) {
           {whyOpen ? "Hide reasoning" : "Why you match"}
           <ChevronDown className={cn("size-4 transition-transform", whyOpen && "rotate-180")} />
         </button>
-        {whyOpen && (
-          <div className={cn("mt-3 space-y-3 text-sage-800", big ? "text-base" : "text-sm")}>
-            {/* The pairs say it more clearly than the generated paragraph; show the paragraph only as a fallback. */}
-            {matchedPairs.length === 0 && <p>{s.explanation}</p>}
-            {matchedPairs.length > 0 && (
-              <ul className="space-y-1">
-                {matchedPairs.map((sp) => (
-                  <li key={`${sp.mine}-${sp.theirs}`} className="rounded-xl bg-white/70 px-3 py-2">
-                    Your “{sp.mine}” ↔ {first}&apos;s “{sp.theirs}”
-                  </li>
-                ))}
-              </ul>
-            )}
-            <div className="space-y-1.5">
-              <FactorBar label="Shared interests" value={s.semanticScore} color="var(--color-sage-500)" />
-              <FactorBar label="Availability" value={s.availabilityScore} color="var(--color-gold-400)" />
-              <FactorBar label="Topics" value={s.preferenceScore} color="var(--color-terra-300)" />
-              <FactorBar label="Pace fit" value={s.goalScore} color="var(--color-ink-400)" />
-            </div>
-          </div>
-        )}
+        {whyOpen && <p className={cn("mt-3 text-sage-800", big ? "text-base" : "text-sm")}>{s.explanation}</p>}
       </div>
       <div className="mt-5 flex gap-2">
         {s.requestState === "none" && (
