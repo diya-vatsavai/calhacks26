@@ -18,7 +18,6 @@ const DEMO = [
   { email: "eleanor@kindred.demo", label: "Eleanor", who: "Senior · new, unmatched", emoji: "🌹" },
   { email: "aiko@kindred.demo", label: "Aiko", who: "Student · 4 calls with Walter", emoji: "📷" },
   { email: "walter@kindred.demo", label: "Walter", who: "Senior · Memory Book", emoji: "🎷" },
-  { email: "admin@kindred.demo", label: "Admin", who: "Operations dashboard", emoji: "🧭" },
 ];
 
 function SignInInner() {

@@ -12,18 +12,45 @@ import { Textarea } from "@/components/ui/input";
 import { Logo, PageLoader, PersonAvatar, Pip } from "@/components/kindred/basics";
 import { RoleGate, homeFor } from "@/components/kindred/shells";
 import { cn, firstName } from "@/lib/utils";
-import { convexErrorMessage } from "@/lib/api";
+import { convexErrorMessage, useApi } from "@/lib/api";
 import { pickMimeType } from "@/lib/audio";
 import { CaptionOverlay, LambPanel, LambReceipt, useLamb, useLiveCaptions } from "@/components/kindred/lamb";
 
-const ICE: RTCIceServer[] = [
-  { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
-  ...(process.env.NEXT_PUBLIC_TURN_URL
-    ? [{ urls: process.env.NEXT_PUBLIC_TURN_URL, username: process.env.NEXT_PUBLIC_TURN_USERNAME, credential: process.env.NEXT_PUBLIC_TURN_CREDENTIAL }]
-    : []),
-];
+// Used only if /api/ice can't be reached. Relay (TURN) servers come from /api/ice.
+const FALLBACK_ICE: RTCIceServer[] = [{ urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] }];
 
 type Phase = "lobby" | "connecting" | "connected" | "ended";
+
+/**
+ * Relayed (TURN) calls are metered by the relay provider, so when the selected connection runs
+ * through a relay we send a lighter video stream (~360p, 20 fps, ~300 kbps). Direct calls keep full quality.
+ */
+async function saveRelayData(conn: RTCPeerConnection) {
+  try {
+    const stats = await conn.getStats();
+    let pairId: string | undefined;
+    stats.forEach((r) => {
+      if (r.type === "transport" && r.selectedCandidatePairId) pairId = r.selectedCandidatePairId;
+    });
+    const pair = pairId ? stats.get(pairId) : [...stats.values()].find((r) => r.type === "candidate-pair" && r.nominated && r.state === "succeeded");
+    const local = pair && stats.get(pair.localCandidateId);
+    const remote = pair && stats.get(pair.remoteCandidateId);
+    const relayed = local?.candidateType === "relay" || remote?.candidateType === "relay";
+    console.info(`[kindred-call] connection ${relayed ? "via TURN relay — data saver on" : "direct"}`);
+    if (!relayed) return;
+    for (const sender of conn.getSenders()) {
+      if (sender.track?.kind !== "video") continue;
+      const params = sender.getParameters();
+      params.encodings = params.encodings?.length ? params.encodings : [{}];
+      params.encodings[0].maxBitrate = 300_000;
+      params.encodings[0].maxFramerate = 20;
+      params.encodings[0].scaleResolutionDownBy = 2;
+      await sender.setParameters(params);
+    }
+  } catch (e) {
+    console.warn("[kindred-call] could not apply relay data saver", e);
+  }
+}
 
 function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
   const data = useQuery(api.scheduling.getCall, { callId });
@@ -49,6 +76,10 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
   const [recording, setRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [mediaError, setMediaError] = useState<string | null>(null);
+  const [relay, setRelay] = useState<"metered" | "static" | "none">("none");
+  const [stalled, setStalled] = useState(false);
+  const callApi = useApi();
+  const iceServers = useRef<RTCIceServer[]>(FALLBACK_ICE);
   const [captionsOn, setCaptionsOn] = useState<boolean | null>(null);
 
   const localStream = useRef<MediaStream | null>(null);
@@ -122,7 +153,12 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
   const newPeer = useCallback(
     (targetSession: string) => {
       pc.current?.close();
-      const conn = new RTCPeerConnection({ iceServers: ICE });
+      // Debug switch: localStorage["kindred:forceRelay"]="1" sends all media through the TURN relay.
+      let forceRelay = false;
+      try {
+        forceRelay = localStorage.getItem("kindred:forceRelay") === "1";
+      } catch {}
+      const conn = new RTCPeerConnection({ iceServers: iceServers.current, ...(forceRelay ? { iceTransportPolicy: "relay" as const } : {}) });
       pc.current = conn;
       if (process.env.NODE_ENV !== "production") (window as unknown as { __kindredPc: RTCPeerConnection }).__kindredPc = conn;
       peerSession.current = targetSession;
@@ -141,6 +177,7 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
         if (conn.connectionState === "connected") {
           setPhase("connected");
           connectedAt.current ??= Date.now();
+          void saveRelayData(conn);
         } else if (conn.connectionState === "failed" || conn.connectionState === "disconnected") {
           setPhase((p) => (p === "ended" ? p : "connecting"));
         }
@@ -198,6 +235,17 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
       clearInterval(t);
     };
   }, [phase, heartbeat, callId, sessionId, micOn, camOn]);
+
+  // If both people are here but media hasn't connected after 20s, the network is likely blocking
+  // direct connections — tell the user instead of spinning forever.
+  useEffect(() => {
+    if (phase !== "connecting" || !other) {
+      setStalled(false);
+      return;
+    }
+    const t = setTimeout(() => setStalled(true), 20_000);
+    return () => clearTimeout(t);
+  }, [phase, other?.sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ---- consent-gated recording of MY OWN microphone only ----
   useEffect(() => {
@@ -280,6 +328,14 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
 
   async function enter() {
     try {
+      // Fetch relay (TURN) credentials before any peer connection is created.
+      try {
+        const ice = await callApi<{ iceServers: RTCIceServer[]; relay: "metered" | "static" | "none" }>("/api/ice");
+        iceServers.current = ice.iceServers;
+        setRelay(ice.relay);
+      } catch {
+        iceServers.current = FALLBACK_ICE;
+      }
       await startMedia(data?.buddy?.callFormat !== "audio" && data?.me?.callFormat !== "audio");
       await join({ callId, sessionId, micOn: true, camOn: true });
       setPhase("connecting");
@@ -307,7 +363,7 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
   const senior = data.myRole === "senior";
   const mmss = `${String(Math.floor(elapsed / 60)).padStart(2, "0")}:${String(elapsed % 60).padStart(2, "0")}`;
 
-  if (phase === "ended") return <EndScreen callId={callId} senior={senior} buddyName={buddy?.name ?? ""} elapsed={elapsed} recorded={Boolean(chunks.current.length) || bothConsented} />;
+  if (phase === "ended") return <EndScreen callId={callId} senior={senior} buddyName={buddy?.name ?? ""} elapsed={elapsed} recorded={Boolean(chunks.current.length) || bothConsented} everConnected={connectedAt.current !== null} />;
 
   if (phase === "lobby") {
     return (
@@ -356,6 +412,17 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
             <div className="flex flex-col items-center gap-4">
               <PersonAvatar avatar={buddy?.avatar} color={buddy?.avatarColor} name={buddy?.name} size="xl" className={cn(phase === "connected" && "animate-pulse-ring")} />
               <p className="text-lg text-cream-200">{phase === "connected" ? (other?.micOn === false ? `${firstName(buddy?.name)} is muted` : "Voice call") : <span className="flex items-center gap-2"><Loader2 className="size-4 animate-spin" /> {other ? "Connecting…" : "Waiting…"}</span>}</p>
+              {stalled && (
+                <div className="max-w-sm rounded-2xl bg-white/10 p-4 text-center text-sm text-cream-100">
+                  <p className="font-semibold">This is taking longer than usual.</p>
+                  <p className="mt-1 text-cream-200">
+                    {relay === "none"
+                      ? "Your network may be blocking direct calls. Try a different Wi-Fi or a phone hotspot."
+                      : "Still trying through our relay server. Check that both of you are online, or try rejoining."}
+                  </p>
+                  <button onClick={() => location.reload()} className="mt-3 rounded-full bg-white/15 px-4 py-1.5 font-semibold hover:bg-white/25">Rejoin call</button>
+                </div>
+              )}
             </div>
           )}
           {hasVideo && (
@@ -402,7 +469,7 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
   );
 }
 
-function EndScreen({ callId, senior, buddyName, elapsed }: { callId: Id<"scheduledCalls">; senior: boolean; buddyName: string; elapsed: number; recorded: boolean }) {
+function EndScreen({ callId, senior, buddyName, elapsed, everConnected }: { callId: Id<"scheduledCalls">; senior: boolean; buddyName: string; elapsed: number; recorded: boolean; everConnected: boolean }) {
   const data = useQuery(api.scheduling.getCall, { callId });
   const feedback = useMutation(api.calls.submitFeedback);
   const [rating, setRating] = useState(0);
@@ -435,7 +502,11 @@ function EndScreen({ callId, senior, buddyName, elapsed }: { callId: Id<"schedul
 
         <div className="mt-8 rounded-2xl bg-cream-100 p-5">
           {!conv || conv.processing === "not_consented" ? (
-            <p className="flex items-center gap-2 text-ink-600"><ShieldCheck className="size-5 text-sage-600" /> This call wasn&apos;t recorded. Nothing was saved except its length.</p>
+            everConnected ? (
+              <p className="flex items-center gap-2 text-ink-600"><ShieldCheck className="size-5 text-sage-600" /> This call wasn&apos;t recorded. Nothing was saved except its length.</p>
+            ) : (
+              <p className="text-ink-600">The call didn&apos;t connect, so nothing was recorded. This usually means one of your networks blocks video calls. Try again, or switch one of you to a different Wi-Fi or a phone hotspot.</p>
+            )
           ) : conv.processing === "failed" ? (
             <p className="text-ink-600">We couldn&apos;t create notes for this call. Your conversation itself was not affected.</p>
           ) : (

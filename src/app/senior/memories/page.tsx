@@ -8,7 +8,7 @@ import type { Doc, Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
-import { Chip, EmptyState, MossTag, SourceTag, Spinner } from "@/components/kindred/basics";
+import { Chip, EmptyState, SourceTag, Spinner } from "@/components/kindred/basics";
 import { cn, firstName } from "@/lib/utils";
 import { ApiError, convexErrorMessage, useApi } from "@/lib/api";
 import { useRecorder, useSpeaker } from "@/lib/audio";
@@ -113,13 +113,14 @@ export default function MemoryBook() {
             <div className="mt-6 border-t border-ink-900/[0.06] pt-6">
               <div className="mb-3 flex flex-wrap items-center gap-3">
                 <p className="text-lg">Results for <b>“{results.query}”</b></p>
-                <MossTag mode={results.mode} latencyMs={results.latencyMs} />
+                {/* Plain-language label for seniors; Moss details live on the admin integrations monitor. */}
+                {results.mode === "moss" && <span className="text-sm text-ink-500">Searched by meaning, not just exact words</span>}
                 <button onClick={() => setResults(null)} className="ml-auto text-ink-500 hover:text-ink-900" aria-label="Clear results"><X className="size-5" /></button>
               </div>
               {results.items.length === 0 ? (
                 <p className="rounded-2xl bg-cream-100 p-5 text-lg text-ink-700">I couldn&apos;t find a memory about that. Try different words — or after your next call, it may be here.</p>
               ) : (
-                <div className="grid gap-4 md:grid-cols-2">{results.items.map((r) => <MemoryCard key={r.entry._id} m={r.entry} relevance={r.score} onEdit={setEditing} speaker={speaker} />)}</div>
+                <div className="grid gap-4 md:grid-cols-2">{results.items.map((r, i) => <MemoryCard key={r.entry._id} m={r.entry} bestMatch={i === 0 && results.items.length > 1} onEdit={setEditing} speaker={speaker} />)}</div>
               )}
             </div>
           )}
@@ -188,7 +189,7 @@ export default function MemoryBook() {
   );
 }
 
-function MemoryCard({ m, onEdit, speaker, draft, relevance, tilt = 0 }: { m: Memory; onEdit: (m: Memory) => void; speaker: ReturnType<typeof useSpeaker>; draft?: boolean; relevance?: number; tilt?: number }) {
+function MemoryCard({ m, onEdit, speaker, draft, bestMatch, tilt = 0 }: { m: Memory; onEdit: (m: Memory) => void; speaker: ReturnType<typeof useSpeaker>; draft?: boolean; bestMatch?: boolean; tilt?: number }) {
   const fav = useMutation(api.memories.toggleFavorite);
   const approve = useMutation(api.memories.approve);
   const remove = useMutation(api.memories.remove);
@@ -210,7 +211,7 @@ function MemoryCard({ m, onEdit, speaker, draft, relevance, tilt = 0 }: { m: Mem
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm font-bold uppercase tracking-wider text-terra-500">{new Date(m.date).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })} · with {m.buddyName}</p>
         <div className="flex items-center gap-2">
-          {relevance != null && <span className="text-xs text-ink-400">relevance {relevance.toFixed(2)}</span>}
+          {bestMatch && <span className="rounded-full bg-sage-100 px-2.5 py-0.5 text-xs font-bold text-sage-700">Best match</span>}
           <SourceTag source={m.source} />
         </div>
       </div>

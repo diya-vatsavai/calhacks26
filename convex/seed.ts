@@ -1,7 +1,7 @@
 // Demo data. Run with:  npx convex run seed:run
 // Every seeded insight/memory is tagged source "seed-demo" and shown with a "Demo data" label.
 // No integration events are seeded — the monitor only shows real API activity.
-import { createAccount } from "@convex-dev/auth/server";
+import { createAccount, invalidateSessions, modifyAccountCredentials } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { internalAction, internalMutation, internalQuery } from "./_generated/server";
 import { internal } from "./_generated/api";
@@ -92,7 +92,8 @@ export const run = internalAction({
     for (const p of PEOPLE) {
       const { user } = await createAccount(ctx, {
         provider: "password",
-        account: { id: p.email, secret: DEMO_PASSWORD },
+        // The admin never gets the public demo password when ADMIN_PASSWORD is set in the Convex env.
+        account: { id: p.email, secret: p.role === "admin" && process.env.ADMIN_PASSWORD ? process.env.ADMIN_PASSWORD : DEMO_PASSWORD },
         profile: { email: p.email, name: p.name, role: p.role, isDemo: true },
       });
       ids[p.email] = user._id;
@@ -326,5 +327,28 @@ export const deleteUser = internalMutation({
     for (const a of await ctx.db.query("authAccounts").withIndex("userIdAndProvider", (q) => q.eq("userId", u._id)).collect()) await ctx.db.delete(a._id);
     await ctx.db.delete(u._id);
     return `deleted ${email}`;
+  },
+});
+
+export const adminUserId = internalQuery({
+  args: {},
+  handler: async (ctx) => (await ctx.db.query("users").withIndex("email", (q) => q.eq("email", "admin@kindred.demo")).first())?._id ?? null,
+});
+
+/**
+ * Sets a private admin password and signs out every existing admin session.
+ *   npx convex run --prod seed:setAdminPassword '{"password":"…"}'
+ * The student/senior demo accounts keep the public demo password so judges can try the app.
+ */
+export const setAdminPassword = internalAction({
+  args: { password: v.string() },
+  handler: async (ctx, { password }) => {
+    if (password.length < 12) throw new Error("Use at least 12 characters for the admin password.");
+    if (password === DEMO_PASSWORD) throw new Error("The admin password must differ from the public demo password.");
+    const userId = await ctx.runQuery(internal.seed.adminUserId, {});
+    if (!userId) return "No admin account found (run seed:run first).";
+    await modifyAccountCredentials(ctx, { provider: "password", account: { id: "admin@kindred.demo", secret: password } });
+    await invalidateSessions(ctx, { userId });
+    return "Admin password changed; existing admin sessions were signed out.";
   },
 });

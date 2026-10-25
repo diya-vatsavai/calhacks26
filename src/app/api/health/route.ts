@@ -28,6 +28,10 @@ export async function GET(req: Request) {
       convex: { url: process.env.NEXT_PUBLIC_CONVEX_URL?.replace(/^https?:\/\//, "") ?? null },
       cartesia: { configured: c.configured, ttsModel: c.ttsModel, sttModel: c.sttModel, apiVersion: c.version, note: "Convex actions read CARTESIA_API_KEY from the Convex deployment env" },
       moss: { configured: mossConfigured(), model: process.env.MOSS_MODEL_ID || "moss-minilm", indexes, error: mossError },
+      webrtc: {
+        relay: process.env.METERED_TURN_APP && process.env.METERED_TURN_API_KEY ? "metered" : process.env.TURN_URLS || process.env.NEXT_PUBLIC_TURN_URL ? "static" : "none",
+        note: "Without a TURN relay, calls on restrictive networks (venues, campuses) may fail to connect",
+      },
       llm: { configuredInNext: Boolean(process.env.ANTHROPIC_API_KEY), model: process.env.ANTHROPIC_MODEL || "claude-opus-5-5", note: "LLM runs in Convex actions (Convex env)" },
     });
   } catch (e) {

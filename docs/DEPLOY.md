@@ -57,6 +57,24 @@ npx convex env set --prod SITE_URL https://<your-service>.onrender.com
 
 The first visit to **Find a buddy** builds the `kindred-prod` Moss index (~20 s, one time). After that, searches take a few milliseconds.
 
+## Admin access
+
+The admin dashboard is not a public demo account. Give it a private password (at least 12 characters) on each deployment, which also signs out any existing admin sessions:
+
+```bash
+npx convex run --prod seed:setAdminPassword '{"password":"<a long private password>"}'
+```
+
+To make fresh seeds use it automatically: `npx convex env set --prod ADMIN_PASSWORD '<same password>'`. Share it only with teammates who need the operations view.
+
+## Demo-day warm-up
+
+Run this ~10 minutes before demoing. It resets Maya & Eleanor, wakes the site, pre-loads every Moss search path, checks the call relay and sponsor configuration, and prints a go / no-go list:
+
+```bash
+npm run warmup -- --prod            # add --no-reset to keep the demo pair's state, --tts to warm the Sonic voice
+```
+
 ## Updating
 
 - **Frontend / API routes:** merge into `main` → Render auto-deploys.
@@ -66,5 +84,5 @@ The first visit to **Find a buddy** builds the `kindred-prod` Moss index (~20 s,
 ## Notes and limits
 
 - **Moss index quota.** The Moss project allows 3 indexes. In use: `kindred` (dev), `kindred-prod` (production) and one pre-existing non-Kindred index. Don't create more Kindred indexes; everything is scoped inside these by `kind` + `ownerId`.
-- **Calls across restrictive networks** (some campus/hotel Wi-Fi) may need a TURN server: set `NEXT_PUBLIC_TURN_URL`, `NEXT_PUBLIC_TURN_USERNAME`, `NEXT_PUBLIC_TURN_CREDENTIAL` in Render and redeploy.
+- **Calls on venue / campus Wi-Fi need a TURN relay.** Create a free app at https://www.metered.ca/stun-turn, then set `METERED_TURN_APP` (the app name, e.g. `kindred` for `kindred.metered.live`) and `METERED_TURN_API_KEY` in Render. Any other TURN provider works via `TURN_URLS`, `TURN_USERNAME`, `TURN_CREDENTIAL`. Credentials stay server-side (`/api/ice`). The admin integrations page shows which relay is active.
 - **Cost.** Render Starter is a small fixed monthly fee. Cartesia/Moss/Anthropic usage is billed on your accounts with each provider.

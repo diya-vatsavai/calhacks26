@@ -59,7 +59,7 @@ Open http://localhost:3000.
 
 ### Demo accounts
 
-Every demo account uses the password `kindred-demo-2026`. The sign-in page also has one-click buttons for them.
+The student and senior demo accounts use the password `kindred-demo-2026`; the admin account has its own private password. The sign-in page also has one-click buttons for them.
 
 | Account | Role | State |
 |---|---|---|
@@ -69,9 +69,9 @@ Every demo account uses the password `kindred-demo-2026`. The sign-in page also 
 | walter@kindred.demo | Senior | Memory Book with 3 entries, weekly calls |
 | diego@kindred.demo / rosa@kindred.demo | Student / Senior | New friendship with a proposed call |
 | lucas@kindred.demo / harold@kindred.demo | Student / Senior | Pending match request |
-| admin@kindred.demo | Admin | Operations and sponsor monitor |
+| admin@kindred.demo | Admin | Operations and sponsor monitor. **Private password** — not the demo password (see [docs/DEPLOY.md](docs/DEPLOY.md#admin-access)) |
 
-To rehearse the demo again, return Maya and Eleanor to their unmatched state and clear the monitor log:
+Before demoing, run `npm run warmup` (or `npm run warmup -- --prod` for the live site). It resets the demo pair, pre-loads Moss and prints a go / no-go checklist. To only reset Maya and Eleanor and clear the monitor log:
 
 ```bash
 npx convex run seed:resetDemo

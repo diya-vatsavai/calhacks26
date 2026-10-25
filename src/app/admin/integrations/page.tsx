@@ -15,6 +15,7 @@ type Health = {
   cartesia: { configured: boolean; ttsModel: string; sttModel: string; apiVersion: string; note: string };
   moss: { configured: boolean; model: string; indexes: Array<{ name: string; status: string; docCount: number; model: string | null }> | null; error: string | null };
   llm: { configuredInNext: boolean; model: string; note: string };
+  webrtc: { relay: "metered" | "static" | "none"; note: string };
 };
 
 const META = {
@@ -113,6 +114,11 @@ export default function IntegrationMonitor() {
                   {!health.moss.configured && <p className="text-xs text-gold-500">Set MOSS_PROJECT_ID / MOSS_PROJECT_KEY. Retrieval falls back to a labeled keyword lexicon.</p>}
                   {health.moss.error && <p className="text-xs text-[#a63a25]">{health.moss.error}</p>}
                   {health.moss.indexes?.map((i) => <p key={i.name} className="text-xs text-ink-500">{i.name} · {i.status} · {i.docCount} docs</p>)}
+                </div>
+                <div>
+                  <p className="font-semibold">Call relay (TURN) {health.webrtc.relay !== "none" ? <CheckCircle2 className="inline size-4 text-sage-600" /> : null}</p>
+                  <p className="text-ink-600">{health.webrtc.relay === "metered" ? "Metered TURN" : health.webrtc.relay === "static" ? "Custom TURN server" : "None (direct connections only)"}</p>
+                  {health.webrtc.relay === "none" && <p className="text-xs text-gold-500">{health.webrtc.note}. Set METERED_TURN_APP / METERED_TURN_API_KEY.</p>}
                 </div>
                 <div><p className="font-semibold">LLM</p><p className="text-ink-600">{health.llm.model}</p><p className="text-xs text-ink-500">{health.llm.note}</p></div>
               </>

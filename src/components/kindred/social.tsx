@@ -148,7 +148,7 @@ export function MatchList({ big }: { big?: boolean }) {
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-sm text-ink-600">
-          {computing ? <><Spinner /> Finding people you&apos;ll click with…</> : <MossTag mode={meta?.mode} latencyMs={meta?.latencyMs} />}
+          {computing ? <><Spinner /> Finding people you&apos;ll click with…</> : big ? null : <MossTag mode={meta?.mode} latencyMs={meta?.latencyMs} />}
         </div>
         <Button variant="outline" size={big ? "default" : "sm"} onClick={recompute} disabled={computing}><RefreshCw className={cn(computing && "animate-spin")} /> Refresh matches</Button>
       </div>
@@ -273,7 +273,7 @@ export function ConversationStarters({ relationshipId, big }: { relationshipId: 
           </li>
         ))}
       </ul>
-      {data.mode === "moss" && <p className="mt-2"><MossTag mode="moss" /></p>}
+      {data.mode === "moss" && !big && <p className="mt-2"><MossTag mode="moss" /></p>}
     </div>
   );
 }
