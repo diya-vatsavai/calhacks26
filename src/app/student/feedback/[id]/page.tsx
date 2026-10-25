@@ -18,10 +18,10 @@ function firstSentence(text: string) {
 }
 
 /** "Show details" toggle: the short version is always visible, the rest on demand. */
-function Details({ children, label = "Show details" }: { children: React.ReactNode; label?: string }) {
+function Details({ children, label = "Show details", className }: { children: React.ReactNode; label?: string; className?: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="mt-3">
+    <div className={cn("mt-3", className)}>
       <button
         type="button"
         onClick={() => setOpen(!open)}
@@ -117,7 +117,7 @@ export default function FeedbackDetail({ params }: { params: Promise<{ id: strin
         </div>
         <ol className="mt-5 grid gap-3 md:grid-cols-3">
           {i.topImprovements.map((t, n) => (
-            <li key={n} className="rounded-2xl border-2 border-[#111d3a]/10 bg-white p-4">
+            <li key={n} className="flex flex-col rounded-2xl border-2 border-[#111d3a]/10 bg-white p-4">
               <div className="flex items-start gap-3">
                 <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#3f87d2] text-sm font-bold text-white">{n + 1}</span>
                 <div className="min-w-0">
@@ -128,7 +128,7 @@ export default function FeedbackDetail({ params }: { params: Promise<{ id: strin
                 </div>
               </div>
               {(t.example || firstSentence(t.detail) !== t.detail.trim()) && (
-                <Details label="Why & example">
+                <Details label="Why & example" className="mt-auto pt-3">
                   {firstSentence(t.detail) !== t.detail.trim() && <p>{t.detail}</p>}
                   {t.example && (
                     <p className="rounded-xl bg-[#e5f1fe] px-3 py-2 italic">
