@@ -16,7 +16,8 @@ let cache: { servers: IceServer[]; at: number } | null = null;
  * Credentials stay server-side and are only handed to signed-in users.
  */
 async function iceServers(): Promise<{ servers: IceServer[]; relay: "metered" | "static" | "none" }> {
-  const app = process.env.METERED_TURN_APP;
+  // Accept "kindred", "kindred.metered.live" or a full URL.
+  const app = process.env.METERED_TURN_APP?.trim().replace(/^https?:\/\//, "").replace(/\.metered\.live.*$/, "");
   const key = process.env.METERED_TURN_API_KEY;
   if (app && key) {
     if (cache && Date.now() - cache.at < 10 * 60_000) return { servers: cache.servers, relay: "metered" };
