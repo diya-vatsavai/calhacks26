@@ -11,6 +11,13 @@ Kindred pairs older adults with English learners for real conversations that bui
 | **Moss** | Semantic memory: interest-level **matching** ("growing roses" ≈ "gardening and house plants"), per-user **learning history** recall that drives personalized exercises, natural-language **Memory Book search**, and **conversation starters** when buddies reconnect. |
 | Claude (Anthropic API) | Structured analysis of transcripts (feedback, memory drafts) and exercise generation and grading, using schema-validated JSON. |
 
+## How we use Convex
+
+- **Live everywhere:** calls, dashboards, matches, feedback and the Lamb panel are reactive `useQuery` screens, with no refresh.
+- **Video calls:** WebRTC signaling runs through Convex tables (`callSignals`, `callPresence`).
+- **After a call:** the scheduler runs the transcription and feedback pipeline. Consented audio and photos live in file storage.
+- **Sign-in:** Convex Auth (password). Full details, files and a dated build log are in [hackathon.md](hackathon.md).
+
 ---
 
 ## Quick start (about 5 minutes)
