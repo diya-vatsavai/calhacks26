@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
 import {
-  CalendarClock, CalendarPlus, Check, Clock, Flag, Heart, Lightbulb, MessageCircle, Phone, RefreshCw, Repeat, Sparkles, Video, X, Ban,
+  CalendarClock, CalendarPlus, Check, ChevronDown, Clock, Flag, Heart, Lightbulb, MessageCircle, Phone, RefreshCw, Repeat, Sparkles, Video, X, Ban,
 } from "lucide-react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
@@ -21,6 +21,33 @@ import { EmptyState, MossTag, PersonAvatar, Spinner } from "./basics";
 type PublicProfile = { userId: Id<"users">; name: string; avatar: string; avatarColor: string; bio?: string; timezone: string; proficiency?: string; nativeLanguage?: string; topics: string[]; role: string; callFormat?: string };
 
 // ---------------- Matching ----------------
+
+/**
+ * Match reasoning is stored in neutral third person ("Maya loves …, and Eleanor loves …. Their free
+ * time overlaps …") because the same text is shown to both people and to admins. On someone's own
+ * screen it's rewritten to second person: "You love …, and Eleanor loves …. Your free time overlaps …".
+ */
+export function personalize(text: string, viewerName?: string | null) {
+  const me = firstName(viewerName ?? "");
+  if (!me) return text;
+  const name = me.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return (
+    text
+      // Current wording
+      .replace(new RegExp(`(^|[.!?]\\s+)${name} loves\\b`, "g"), (_m, lead: string) => `${lead}You love`)
+      .replace(new RegExp(`\\b${name} loves\\b`, "g"), "you love")
+      .replace(/\bTheir free time overlaps\b/g, "Your free time overlaps")
+      .replace(/\bTheir free time doesn't overlap yet, but they can\b/g, "Your free time doesn't overlap yet, but you can")
+      .replace(/\bThey also enjoy\b/g, "You also both enjoy")
+      // Older stored wording (requests made before this change)
+      .replace(new RegExp(`(^|[.!?]\\s+)${name}'s\\b`, "g"), (_m, lead: string) => `${lead}Your`)
+      .replace(new RegExp(`\\b${name}'s\\b`, "g"), "your")
+  );
+}
+
+function useViewerName() {
+  return useQuery(api.users.viewer)?.profile?.name ?? null;
+}
 
 export function useMatchSuggestions() {
   const suggestions = useQuery(api.matching.mySuggestions);
@@ -81,6 +108,14 @@ export function MatchCard({ s, big }: { s: Suggestion; big?: boolean }) {
   };
   const p = s.profile;
   const first = firstName(p.name);
+  const [whyOpen, setWhyOpen] = React.useState(false);
+  const viewerName = useViewerName();
+  // Their interests that matched one of yours — same threshold the matching route uses for a "real" match.
+  const shared = new Set(s.sharedPairs.filter((sp) => sp.similarity >= 0.28).map((sp) => sp.theirs));
+  const timeFit = s.availabilityScore >= 0.8 ? "lots of overlapping free time" : s.availabilityScore >= 0.3 ? "some overlapping free time" : "no shared free time yet";
+  const shortReason = shared.size
+    ? `${shared.size} shared ${shared.size === 1 ? "interest" : "interests"} · ${timeFit}`
+    : `${s.preferenceScore > 0.3 ? "Similar conversation topics" : "No shared interests yet"} · ${timeFit}`;
   return (
     <div className="flex flex-col rounded-[1.5rem] border border-ink-900/[0.06] bg-white p-5 shadow-soft transition hover:shadow-lift">
       <div className="flex items-start gap-4">
@@ -101,25 +136,46 @@ export function MatchCard({ s, big }: { s: Suggestion; big?: boolean }) {
           {p.bio && <p className="mt-2 line-clamp-2 text-sm text-ink-600">{p.bio}</p>}
         </div>
       </div>
-      <div className="mt-4 flex flex-wrap gap-1.5">
-        {s.interests.slice(0, 5).map((i) => (
-          <Badge key={i} variant={s.sharedPairs.some((sp) => sp.theirs === i && sp.similarity > 0.3) ? "default" : "muted"} className={big ? "text-sm" : ""}>{i}</Badge>
-        ))}
-      </div>
-      <div className="mt-4 rounded-2xl bg-sage-50 p-3.5">
-        <p className={cn("flex gap-2 text-sage-800", big ? "text-base" : "text-sm")}>
-          <Sparkles className="mt-0.5 size-4 shrink-0" />
-          <span>{s.explanation}</span>
-        </p>
-      </div>
-      {!big && (
-        <div className="mt-4 space-y-1.5">
-          <FactorBar label="Shared interests" value={s.semanticScore} color="var(--color-sage-500)" />
-          <FactorBar label="Availability" value={s.availabilityScore} color="var(--color-gold-400)" />
-          <FactorBar label="Topics" value={s.preferenceScore} color="var(--color-terra-300)" />
-          <FactorBar label="Pace fit" value={s.goalScore} color="var(--color-ink-400)" />
+      {/* Interests: blue (✓) = one of yours matched it; grey = their other interests */}
+      <div className="mt-4">
+        <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
+          <p className={cn("font-bold uppercase tracking-wider text-ink-500", big ? "text-sm" : "text-[11px]")}>Interests</p>
+          {shared.size > 0 && (
+            <p className={cn("flex items-center gap-1 text-ink-500", big ? "text-sm" : "text-[11px]")}>
+              <span className="inline-block size-2.5 rounded-full bg-sage-400" /> Shared with you
+            </p>
+          )}
         </div>
-      )}
+        <div className="flex flex-wrap gap-1.5">
+          {[...s.interests]
+            .sort((a, b) => Number(shared.has(b)) - Number(shared.has(a))) // shared ones first
+            .slice(0, 5)
+            .map((i) => (
+            <Badge key={i} variant={shared.has(i) ? "default" : "muted"} className={big ? "text-sm" : ""}>
+              {shared.has(i) && <Check className="size-3" />}
+              {i}
+            </Badge>
+          ))}
+        </div>
+      </div>
+
+      {/* One short reason; the full reasoning is one tap away */}
+      <div className="mt-4 rounded-2xl bg-sage-50 p-3.5">
+        <p className={cn("flex gap-2 font-semibold text-sage-800", big ? "text-base" : "text-sm")}>
+          <Sparkles className="mt-0.5 size-4 shrink-0" />
+          <span>{shortReason}</span>
+        </p>
+        <button
+          type="button"
+          onClick={() => setWhyOpen(!whyOpen)}
+          aria-expanded={whyOpen}
+          className={cn("mt-2 inline-flex items-center gap-1 font-semibold text-sage-700 hover:text-sage-800", big ? "text-base" : "text-sm")}
+        >
+          {whyOpen ? "Hide reasoning" : "Why you match"}
+          <ChevronDown className={cn("size-4 transition-transform", whyOpen && "rotate-180")} />
+        </button>
+        {whyOpen && <p className={cn("mt-3 text-sage-800", big ? "text-base" : "text-sm")}>{personalize(s.explanation, viewerName)}</p>}
+      </div>
       <div className="mt-5 flex gap-2">
         {s.requestState === "none" && (
           <Button className="flex-1" size={big ? "lg" : "default"} variant={big ? "terra" : "default"} disabled={busy} onClick={() => run(() => send({ toUserId: p.userId }), `Request sent to ${first}!`)}>
@@ -157,7 +213,7 @@ export function MatchList({ big }: { big?: boolean }) {
       ) : suggestions.length === 0 ? (
         <EmptyState icon={<Heart />} title="No new matches right now" body="Everyone you might click with is already your buddy — or new people are still joining. Check back soon!" />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">{suggestions.map((s) => <MatchCard key={s._id} s={s} big={big} />)}</div>
+        <div className="grid items-start gap-4 md:grid-cols-2">{suggestions.map((s) => <MatchCard key={s._id} s={s} big={big} />)}</div>
       )}
     </div>
   );
@@ -166,6 +222,7 @@ export function MatchList({ big }: { big?: boolean }) {
 export function IncomingRequests({ big }: { big?: boolean }) {
   const reqs = useQuery(api.matching.incomingRequests);
   const respond = useMutation(api.matching.respondRequest);
+  const viewerName = useViewerName();
   if (!reqs?.length) return null;
   return (
     <div className="space-y-3">
@@ -175,7 +232,7 @@ export function IncomingRequests({ big }: { big?: boolean }) {
           <div className="min-w-0 flex-1">
             <p className={cn("font-semibold", big ? "text-xl" : "")}>{r.profile.name} would like to be your buddy</p>
             {r.message && <p className="mt-0.5 text-ink-600">“{r.message}”</p>}
-            {r.explanation && <p className="mt-1 text-sm text-ink-500">{r.explanation}</p>}
+            {r.explanation && <p className="mt-1 text-sm text-ink-500">{personalize(r.explanation, viewerName)}</p>}
           </div>
           <div className="flex gap-2">
             <Button size={big ? "lg" : "default"} onClick={() => respond({ requestId: r._id, accept: true }).then(() => toast.success(`You and ${firstName(r.profile.name)} are now buddies!`)).catch((e) => toast.error(convexErrorMessage(e)))}><Check /> Accept</Button>
