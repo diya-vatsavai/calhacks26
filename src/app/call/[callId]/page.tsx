@@ -12,15 +12,11 @@ import { Textarea } from "@/components/ui/input";
 import { Logo, PageLoader, PersonAvatar } from "@/components/kindred/basics";
 import { RoleGate, homeFor } from "@/components/kindred/shells";
 import { cn, firstName } from "@/lib/utils";
-import { convexErrorMessage } from "@/lib/api";
+import { convexErrorMessage, useApi } from "@/lib/api";
 import { pickMimeType } from "@/lib/audio";
 
-const ICE: RTCIceServer[] = [
-  { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
-  ...(process.env.NEXT_PUBLIC_TURN_URL
-    ? [{ urls: process.env.NEXT_PUBLIC_TURN_URL, username: process.env.NEXT_PUBLIC_TURN_USERNAME, credential: process.env.NEXT_PUBLIC_TURN_CREDENTIAL }]
-    : []),
-];
+// Used only if /api/ice can't be reached. Relay (TURN) servers come from /api/ice.
+const FALLBACK_ICE: RTCIceServer[] = [{ urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] }];
 
 const GENERIC_PROMPTS = ["What's something that made you smile this week?", "What did you love doing when you were twenty?", "What's a food that reminds you of home?", "Where is a place you'd love to visit?"];
 
@@ -51,6 +47,10 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
   const [elapsed, setElapsed] = useState(0);
   const [showPrompts, setShowPrompts] = useState(true);
   const [mediaError, setMediaError] = useState<string | null>(null);
+  const [relay, setRelay] = useState<"metered" | "static" | "none">("none");
+  const [stalled, setStalled] = useState(false);
+  const callApi = useApi();
+  const iceServers = useRef<RTCIceServer[]>(FALLBACK_ICE);
 
   const localStream = useRef<MediaStream | null>(null);
   const localVideoEl = useRef<HTMLVideoElement>(null);
@@ -103,7 +103,7 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
   const newPeer = useCallback(
     (targetSession: string) => {
       pc.current?.close();
-      const conn = new RTCPeerConnection({ iceServers: ICE });
+      const conn = new RTCPeerConnection({ iceServers: iceServers.current });
       pc.current = conn;
       if (process.env.NODE_ENV !== "production") (window as unknown as { __kindredPc: RTCPeerConnection }).__kindredPc = conn;
       peerSession.current = targetSession;
@@ -179,6 +179,17 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
       clearInterval(t);
     };
   }, [phase, heartbeat, callId, sessionId, micOn, camOn]);
+
+  // If both people are here but media hasn't connected after 20s, the network is likely blocking
+  // direct connections — tell the user instead of spinning forever.
+  useEffect(() => {
+    if (phase !== "connecting" || !other) {
+      setStalled(false);
+      return;
+    }
+    const t = setTimeout(() => setStalled(true), 20_000);
+    return () => clearTimeout(t);
+  }, [phase, other?.sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ---- consent-gated recording of MY OWN microphone only ----
   useEffect(() => {
@@ -261,6 +272,14 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
 
   async function enter() {
     try {
+      // Fetch relay (TURN) credentials before any peer connection is created.
+      try {
+        const ice = await callApi<{ iceServers: RTCIceServer[]; relay: "metered" | "static" | "none" }>("/api/ice");
+        iceServers.current = ice.iceServers;
+        setRelay(ice.relay);
+      } catch {
+        iceServers.current = FALLBACK_ICE;
+      }
       await startMedia(data?.buddy?.callFormat !== "audio" && data?.me?.callFormat !== "audio");
       await join({ callId, sessionId, micOn: true, camOn: true });
       setPhase("connecting");
@@ -343,6 +362,17 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
             <div className="flex flex-col items-center gap-4">
               <PersonAvatar avatar={buddy?.avatar} color={buddy?.avatarColor} name={buddy?.name} size="xl" className={cn(phase === "connected" && "animate-pulse-ring")} />
               <p className="text-lg text-cream-200">{phase === "connected" ? (other?.micOn === false ? `${firstName(buddy?.name)} is muted` : "Voice call") : <span className="flex items-center gap-2"><Loader2 className="size-4 animate-spin" /> {other ? "Connecting…" : "Waiting…"}</span>}</p>
+              {stalled && (
+                <div className="max-w-sm rounded-2xl bg-white/10 p-4 text-center text-sm text-cream-100">
+                  <p className="font-semibold">This is taking longer than usual.</p>
+                  <p className="mt-1 text-cream-200">
+                    {relay === "none"
+                      ? "Your network may be blocking direct calls. Try a different Wi-Fi or a phone hotspot."
+                      : "Still trying through our relay server. Check that both of you are online, or try rejoining."}
+                  </p>
+                  <button onClick={() => location.reload()} className="mt-3 rounded-full bg-white/15 px-4 py-1.5 font-semibold hover:bg-white/25">Rejoin call</button>
+                </div>
+              )}
             </div>
           )}
           {hasVideo && (

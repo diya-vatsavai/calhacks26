@@ -66,5 +66,5 @@ The first visit to **Find a buddy** builds the `kindred-prod` Moss index (~20 s,
 ## Notes and limits
 
 - **Moss index quota.** The Moss project allows 3 indexes. In use: `kindred` (dev), `kindred-prod` (production) and one pre-existing non-Kindred index. Don't create more Kindred indexes; everything is scoped inside these by `kind` + `ownerId`.
-- **Calls across restrictive networks** (some campus/hotel Wi-Fi) may need a TURN server: set `NEXT_PUBLIC_TURN_URL`, `NEXT_PUBLIC_TURN_USERNAME`, `NEXT_PUBLIC_TURN_CREDENTIAL` in Render and redeploy.
+- **Calls on venue / campus Wi-Fi need a TURN relay.** Create a free app at https://www.metered.ca/stun-turn, then set `METERED_TURN_APP` (the app name, e.g. `kindred` for `kindred.metered.live`) and `METERED_TURN_API_KEY` in Render. Any other TURN provider works via `TURN_URLS`, `TURN_USERNAME`, `TURN_CREDENTIAL`. Credentials stay server-side (`/api/ice`). The admin integrations page shows which relay is active.
 - **Cost.** Render Starter is a small fixed monthly fee. Cartesia/Moss/Anthropic usage is billed on your accounts with each provider.
