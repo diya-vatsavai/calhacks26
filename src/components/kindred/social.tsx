@@ -22,6 +22,23 @@ type PublicProfile = { userId: Id<"users">; name: string; avatar: string; avatar
 
 // ---------------- Matching ----------------
 
+/**
+ * Match reasoning is stored in neutral third person ("Maya's … connects with Eleanor's …") because
+ * the same text is shown to both people. On someone's own screen, their name becomes "your".
+ */
+export function personalize(text: string, viewerName?: string | null) {
+  const me = firstName(viewerName ?? "");
+  if (!me) return text;
+  const name = me.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return text
+    .replace(new RegExp(`(^|[.!?]\\s+)${name}'s\\b`, "g"), (_m, lead: string) => `${lead}Your`)
+    .replace(new RegExp(`\\b${name}'s\\b`, "g"), "your");
+}
+
+function useViewerName() {
+  return useQuery(api.users.viewer)?.profile?.name ?? null;
+}
+
 export function useMatchSuggestions() {
   const suggestions = useQuery(api.matching.mySuggestions);
   const call = useApi();
@@ -82,6 +99,7 @@ export function MatchCard({ s, big }: { s: Suggestion; big?: boolean }) {
   const p = s.profile;
   const first = firstName(p.name);
   const [whyOpen, setWhyOpen] = React.useState(false);
+  const viewerName = useViewerName();
   // Their interests that matched one of yours — same threshold the matching route uses for a "real" match.
   const shared = new Set(s.sharedPairs.filter((sp) => sp.similarity >= 0.28).map((sp) => sp.theirs));
   const timeFit = s.availabilityScore >= 0.8 ? "lots of overlapping free time" : s.availabilityScore >= 0.3 ? "some overlapping free time" : "no shared free time yet";
@@ -146,7 +164,7 @@ export function MatchCard({ s, big }: { s: Suggestion; big?: boolean }) {
           {whyOpen ? "Hide reasoning" : "Why you match"}
           <ChevronDown className={cn("size-4 transition-transform", whyOpen && "rotate-180")} />
         </button>
-        {whyOpen && <p className={cn("mt-3 text-sage-800", big ? "text-base" : "text-sm")}>{s.explanation}</p>}
+        {whyOpen && <p className={cn("mt-3 text-sage-800", big ? "text-base" : "text-sm")}>{personalize(s.explanation, viewerName)}</p>}
       </div>
       <div className="mt-5 flex gap-2">
         {s.requestState === "none" && (
@@ -194,6 +212,7 @@ export function MatchList({ big }: { big?: boolean }) {
 export function IncomingRequests({ big }: { big?: boolean }) {
   const reqs = useQuery(api.matching.incomingRequests);
   const respond = useMutation(api.matching.respondRequest);
+  const viewerName = useViewerName();
   if (!reqs?.length) return null;
   return (
     <div className="space-y-3">
@@ -203,7 +222,7 @@ export function IncomingRequests({ big }: { big?: boolean }) {
           <div className="min-w-0 flex-1">
             <p className={cn("font-semibold", big ? "text-xl" : "")}>{r.profile.name} would like to be your buddy</p>
             {r.message && <p className="mt-0.5 text-ink-600">“{r.message}”</p>}
-            {r.explanation && <p className="mt-1 text-sm text-ink-500">{r.explanation}</p>}
+            {r.explanation && <p className="mt-1 text-sm text-ink-500">{personalize(r.explanation, viewerName)}</p>}
           </div>
           <div className="flex gap-2">
             <Button size={big ? "lg" : "default"} onClick={() => respond({ requestId: r._id, accept: true }).then(() => toast.success(`You and ${firstName(r.profile.name)} are now buddies!`)).catch((e) => toast.error(convexErrorMessage(e)))}><Check /> Accept</Button>
