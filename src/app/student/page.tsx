@@ -6,7 +6,7 @@ import { ArrowRight, CalendarPlus, Clock, HeartHandshake, Mic2, MessageSquareTex
 import { api } from "../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { EmptyState, PersonAvatar, SectionTitle, SourceTag, Stat } from "@/components/kindred/basics";
+import { EmptyState, PersonAvatar, Pip, SectionTitle, SourceTag, Stat } from "@/components/kindred/basics";
 import { useViewer } from "@/components/kindred/shells";
 import { IncomingRequests } from "@/components/kindred/social";
 import { firstName, fmtWhen, relativeDay } from "@/lib/utils";
@@ -25,47 +25,49 @@ export default function StudentHome() {
   const latest = insights?.[0];
 
   return (
-    <div className="space-y-10">
-      <section className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="text-sm font-semibold text-ink-500">{greet},</p>
-          <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">{firstName(viewer.name)} <span className="inline-block animate-[rise_.6s_ease-out]">👋</span></h1>
-          <p className="mt-2 text-ink-600">
+    <div className="space-y-8">
+      <section className="relative overflow-hidden rounded-[2rem] border-2 border-[#111d3a]/10 bg-white px-6 py-7 shadow-[0_12px_0_#c9dff5] sm:px-10 sm:py-9">
+        <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-2xl">
+            <p className="text-base font-bold text-[#3f87d2]">{greet},</p>
+            <h1 className="mt-1 text-5xl font-bold tracking-tight text-[#111d3a] sm:text-7xl">{firstName(viewer.name)} <span className="inline-block animate-[rise_.6s_ease-out]">👋</span></h1>
+            <p className="mt-3 max-w-xl text-lg leading-relaxed text-[#314267]">
             {progress?.totals.speakingMin ? <>You&apos;ve spoken English for <b>{progress.totals.speakingMin} minutes</b> on Kindred. Keep it going!</> : "Your first conversation is the hardest — and the best. Let's find you a buddy."}
-          </p>
+            </p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Button asChild size="lg" className="bg-[#3f87d2] text-white hover:bg-[#2e72bb]"><Link href="/student/match"><HeartHandshake /> Find a buddy</Link></Button>
+              <Button asChild size="lg" variant="outline" className="border-[#111d3a]/20 bg-white"><Link href="/student/schedule"><CalendarPlus /> Schedule a call</Link></Button>
+            </div>
+          </div>
+          <Pip size="lg" className="self-center lg:mr-10" />
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button asChild size="lg"><Link href="/student/match"><HeartHandshake /> Find a buddy</Link></Button>
-          <Button asChild size="lg" variant="outline"><Link href="/student/schedule"><CalendarPlus /> Schedule a call</Link></Button>
-          <Button asChild size="lg" variant="terra"><Link href="/student/practice"><Mic2 /> Practice with AI</Link></Button>
-        </div>
+        <div className="pointer-events-none absolute -bottom-16 -right-8 size-48 rounded-full bg-[#d6ecff]" />
       </section>
 
       <IncomingRequests />
 
       <section className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
         {/* Next conversation */}
-        <div className="relative overflow-hidden rounded-[1.5rem] bg-ink-900 p-6 text-cream-50 shadow-lift">
-          <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-sage-500/30 blur-2xl" />
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-gold-300">Next conversation</p>
+        <div className="relative overflow-hidden rounded-[1.75rem] border-2 border-[#111d3a] bg-[#fff7d1] p-6 text-[#111d3a] shadow-[0_8px_0_#e8dca4]">
+          <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#314267]">Your next call</p>
           {next ? (
             <div className="relative mt-4 flex flex-wrap items-center gap-5">
               <PersonAvatar avatar={next.buddy.avatar} color={next.buddy.avatarColor} name={next.buddy.name} size="lg" ring />
               <div className="flex-1">
-                <p className="font-display text-2xl font-semibold">{next.buddy.name}</p>
-                <p className="text-cream-200">{relativeDay(next.startAt)} · {fmtWhen(next.startAt, { weekday: undefined, month: undefined, day: undefined })} · {next.durationMin} min</p>
-                {next.topic && <p className="mt-1 text-sm text-cream-200/80">Topic: {next.topic}</p>}
-                {next.status === "proposed" && <p className="mt-1 text-sm text-gold-200">{next.needsMyResponse ? "Waiting for you to confirm" : `Waiting for ${firstName(next.buddy.name)} to confirm`}</p>}
+                <p className="font-display text-3xl font-semibold">{next.buddy.name}</p>
+                <p className="text-[#314267]">{relativeDay(next.startAt)} · {fmtWhen(next.startAt, { weekday: undefined, month: undefined, day: undefined })} · {next.durationMin} min</p>
+                {next.topic && <p className="mt-1 text-sm text-[#314267]">Topic: {next.topic}</p>}
+                {next.status === "proposed" && <p className="mt-1 text-sm font-semibold text-[#974d31]">{next.needsMyResponse ? "Waiting for you to confirm" : `Waiting for ${firstName(next.buddy.name)} to confirm`}</p>}
               </div>
               {next.status !== "proposed" && (
-                <Button asChild variant="gold" size="lg"><Link href={`/call/${next._id}`}><Video /> Join</Link></Button>
+                <Button asChild size="lg" className="bg-[#3f87d2] text-white hover:bg-[#2e72bb]"><Link href={`/call/${next._id}`}><Video /> Join call</Link></Button>
               )}
             </div>
           ) : (
             <div className="relative mt-4">
               <p className="font-display text-2xl">Nothing scheduled yet</p>
-              <p className="mt-1 text-cream-200">Weekly calls with the same buddy help the most.</p>
-              <Button asChild variant="gold" className="mt-4"><Link href={buddies?.length ? "/student/schedule" : "/student/match"}>{buddies?.length ? "Schedule a call" : "Find a buddy"} <ArrowRight /></Link></Button>
+              <p className="mt-1 text-[#314267]">Weekly calls with the same buddy help the most.</p>
+              <Button asChild className="mt-4 bg-[#3f87d2] text-white hover:bg-[#2e72bb]"><Link href={buddies?.length ? "/student/schedule" : "/student/match"}>{buddies?.length ? "Schedule a call" : "Find a buddy"} <ArrowRight /></Link></Button>
             </div>
           )}
         </div>
@@ -107,7 +109,7 @@ export default function StudentHome() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle>Recommended practice</CardTitle></CardHeader>
+          <CardHeader><CardTitle>Practice Studio</CardTitle></CardHeader>
           <CardContent className="space-y-2">
             {(progress?.recurringWeaknesses.length ? progress.recurringWeaknesses.slice(0, 3) : (viewer.profile?.learningGoals ?? ["fluency"]).map((g) => ({ tag: GOAL_LABEL[g] ?? g, count: 0 }))).map((w) => (
               <Link key={w.tag} href={`/student/practice?focus=${encodeURIComponent(w.tag)}`} className="group flex items-center justify-between rounded-2xl border border-ink-900/[0.06] bg-cream-50 p-3 transition hover:border-sage-300 hover:bg-sage-50">
@@ -118,9 +120,34 @@ export default function StudentHome() {
                 <Sparkles className="size-4 text-sage-600 transition group-hover:scale-110" />
               </Link>
             ))}
-            <Button asChild variant="terra" className="mt-2 w-full"><Link href="/student/practice"><Mic2 /> Open Practice Studio</Link></Button>
+            <Button asChild className="mt-2 w-full bg-[#6bb1f3] text-[#111d3a] hover:bg-[#3f87d2]"><Link href="/student/practice"><Mic2 /> Open Practice Studio</Link></Button>
           </CardContent>
         </Card>
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-2">
+        <Link href="/student/feedback" className="group rounded-[1.5rem] border-2 border-[#111d3a]/10 bg-[#d6ecff] p-6 transition hover:-translate-y-0.5 hover:shadow-lift">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#3f87d2]">Keep growing</p>
+              <h2 className="mt-2 font-display text-3xl font-bold text-[#111d3a]">Your feedback</h2>
+              <p className="mt-2 text-[#314267]">{latest ? "See the kind, specific tips from your latest conversation." : "After a recorded call, your personal tips will appear here."}</p>
+            </div>
+            <MessageSquareText className="size-8 text-[#3f87d2]" />
+          </div>
+          <span className="mt-5 inline-flex items-center gap-2 font-bold text-[#111d3a]">Open feedback <ArrowRight className="size-4 transition group-hover:translate-x-1" /></span>
+        </Link>
+        <Link href="/student/progress" className="group rounded-[1.5rem] border-2 border-[#111d3a]/10 bg-[#fff7d1] p-6 transition hover:-translate-y-0.5 hover:shadow-lift">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#314267]">Look back</p>
+              <h2 className="mt-2 font-display text-3xl font-bold text-[#111d3a]">Your progress</h2>
+              <p className="mt-2 text-[#314267]">See your speaking time, conversations, and growing skills.</p>
+            </div>
+            <Target className="size-8 text-[#111d3a]" />
+          </div>
+          <span className="mt-5 inline-flex items-center gap-2 font-bold text-[#111d3a]">View progress <ArrowRight className="size-4 transition group-hover:translate-x-1" /></span>
+        </Link>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-3">

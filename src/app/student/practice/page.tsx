@@ -10,7 +10,7 @@ import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DemoTag, MossTag, PersonAvatar, ScoreRing, SourceTag, Spinner } from "@/components/kindred/basics";
+import { DemoTag, MossTag, PersonAvatar, Pip, ScoreRing, SourceTag, Spinner } from "@/components/kindred/basics";
 import { useViewer } from "@/components/kindred/shells";
 import { cn, relativeDay } from "@/lib/utils";
 import { ApiError, useApi } from "@/lib/api";
@@ -167,13 +167,18 @@ function Studio() {
   if (!sessionId || !exercise) {
     return (
       <div className="space-y-8">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-terra-500">AI Practice Studio</p>
-          <h1 className="mt-1 font-display text-4xl font-semibold tracking-tight sm:text-5xl">Practice out loud with your coach</h1>
-          <p className="mt-2 max-w-2xl text-ink-600">
+        <div className="relative overflow-hidden rounded-[2rem] border-2 border-[#111d3a]/10 bg-[#d6ecff] px-6 py-7 sm:px-10">
+          <div className="relative z-10 flex items-center justify-between gap-6">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#3f87d2]">AI Practice Studio</p>
+              <h1 className="mt-1 max-w-3xl text-5xl font-bold tracking-tight text-[#111d3a]">Practice out loud with your coach</h1>
+              <p className="mt-3 max-w-2xl text-lg leading-relaxed text-[#314267]">
             Your coach remembers what came up in your real conversations (via Moss), speaks with a natural voice (Cartesia Sonic), and listens to your answers (Cartesia Ink).
-          </p>
-          {focusParam && <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-sage-100 px-3 py-1 text-sm font-semibold text-sage-800">Focus: {focusParam}</p>}
+              </p>
+              {focusParam && <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-sm font-semibold text-[#314267]">Focus: {focusParam}</p>}
+            </div>
+            <Pip size="lg" className="hidden sm:block" />
+          </div>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {TYPES.map((t) => {

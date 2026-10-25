@@ -6,22 +6,22 @@
   --color-cream-100: #fbf6ec;
   --color-cream-200: #f4ecdc;
   --color-cream-300: #eadfc8;
-  --color-sage-50: #f1f5ee;
-  --color-sage-100: #e1eadb;
-  --color-sage-200: #c6d6bb;
-  --color-sage-300: #a5bf96;
-  --color-sage-400: #84a572;
-  --color-sage-500: #678a57;
-  --color-sage-600: #526f45;
-  --color-sage-700: #405737;
-  --color-sage-800: #2f402a;
-  --color-terra-50: #fbf0eb;
-  --color-terra-100: #f6dccf;
-  --color-terra-200: #edbba5;
-  --color-terra-300: #e09a7c;
-  --color-terra-400: #cf7a58;
-  --color-terra-500: #b9623f;
-  --color-terra-600: #974d31;
+  --color-sage-50: #f0f7ff;
+  --color-sage-100: #d6ecff;
+  --color-sage-200: #b7d9f7;
+  --color-sage-300: #8fc2ee;
+  --color-sage-400: #6bb1f3;
+  --color-sage-500: #3f87d2;
+  --color-sage-600: #2f70b7;
+  --color-sage-700: #245993;
+  --color-sage-800: #1d4673;
+  --color-terra-50: #fffdf0;
+  --color-terra-100: #fff7d1;
+  --color-terra-200: #ffefa1;
+  --color-terra-300: #f6dc68;
+  --color-terra-400: #e8c94f;
+  --color-terra-500: #9a7b12;
+  --color-terra-600: #6e5708;
   --color-gold-100: #faefcf;
   --color-gold-200: #f3dd9c;
   --color-gold-300: #e8c766;
@@ -66,6 +66,24 @@ html, body {
 body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+}
+
+.student {
+  --student-navy: #111d3a;
+  --student-blue: #3f87d2;
+  --student-sky: #e5f1fe;
+  --student-green: #6bb1f3;
+  --student-yellow: #fff7d1;
+  font-family: var(--font-sans);
+  color: var(--student-navy);
+}
+
+.student h1,
+.student h2,
+.student h3,
+.student .font-display {
+  font-family: var(--font-readable);
+  letter-spacing: -0.02em;
 }
 
 /* paper texture for scrapbook surfaces */

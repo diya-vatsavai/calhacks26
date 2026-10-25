@@ -1,58 +1,59 @@
 import Link from "next/link";
 import { ArrowRight, BookHeart, CalendarHeart, HeartHandshake, Mic2, Sparkles, Waves, Database, Search } from "lucide-react";
-import { Logo } from "@/components/kindred/basics";
+import { Logo, Pip } from "@/components/kindred/basics";
 
 export default function Landing() {
   return (
-    <div className="min-h-screen overflow-hidden bg-cream-100">
+    <div className="student min-h-screen overflow-hidden bg-[#e5f1fe]">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
-        <Logo />
+        <Logo className="text-[#111d3a]" />
         <nav className="flex items-center gap-2 text-sm font-semibold">
-          <a href="#how" className="hidden rounded-full px-4 py-2 text-ink-700 hover:bg-white sm:inline">How it works</a>
-          <Link href="/signin" className="rounded-full border border-ink-900/15 bg-white/70 px-4 py-2 hover:bg-white">Sign in</Link>
+          <a href="#how" className="hidden rounded-full px-4 py-2 text-[#314267] hover:bg-white sm:inline">How it works</a>
+          <Link href="/signin" className="rounded-full border-2 border-[#111d3a]/15 bg-white/80 px-4 py-2 font-bold text-[#111d3a] hover:bg-white">Sign in</Link>
         </nav>
       </header>
 
       {/* Hero */}
       <section className="relative mx-auto grid max-w-6xl items-center gap-12 px-6 pb-20 pt-8 lg:grid-cols-[1.1fr_1fr] lg:pt-16">
         <div className="animate-rise">
-          <p className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-terra-500 shadow-soft">
+          <p className="mb-5 inline-flex items-center gap-2 rounded-full bg-[#fff7d1] px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-[#314267] shadow-soft">
             <Sparkles className="size-3.5" /> Intergenerational friendship
           </p>
-          <h1 className="font-display text-5xl font-semibold leading-[1.04] tracking-tight text-ink-900 sm:text-6xl">
+          <h1 className="text-5xl font-bold leading-[1.04] tracking-tight text-[#111d3a] sm:text-7xl">
             Different generations.
             <br />
-            <span className="italic text-sage-600">Shared stories.</span>
+            <span className="text-[#3f87d2]">Shared stories.</span>
             <br />
             Lasting connections.
           </h1>
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-600">
+          <p className="mt-6 max-w-xl text-lg leading-relaxed text-[#314267]">
             Kindred pairs older adults who love a good conversation with people learning English. Students gain real-world fluency and
             personal coaching. Seniors gain friends — and a Memory Book of the stories they share.
           </p>
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
             <Link
               href="/signin?mode=signup&role=student"
-              className="group inline-flex h-14 items-center justify-center gap-3 rounded-full bg-sage-600 px-7 text-base font-semibold text-white shadow-lift transition hover:bg-sage-700"
+              className="group inline-flex h-14 items-center justify-center gap-3 rounded-full bg-[#3f87d2] px-7 text-base font-semibold text-white shadow-lift transition hover:bg-[#2e72bb]"
             >
               <Mic2 className="size-5" /> I&apos;m here to practice English
               <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
             </Link>
             <Link
               href="/signin?mode=signup&role=senior"
-              className="group inline-flex h-14 items-center justify-center gap-3 rounded-full bg-terra-400 px-7 text-base font-semibold text-white shadow-lift transition hover:bg-terra-500"
+              className="group inline-flex h-14 items-center justify-center gap-3 rounded-full bg-[#6bb1f3] px-7 text-base font-semibold text-[#111d3a] shadow-lift transition hover:bg-[#3f87d2]"
             >
               <HeartHandshake className="size-5" /> I&apos;m here to connect
               <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
             </Link>
           </div>
-          <p className="mt-4 text-sm text-ink-500">For adults 18+. Free during our pilot.</p>
+          <p className="mt-4 text-sm text-[#314267]">For adults 18+. Free during our pilot.</p>
         </div>
 
         {/* Illustration: a friendship in three moments */}
         <div className="relative h-[460px] animate-rise [animation-delay:120ms]">
-          <div className="absolute -right-24 -top-16 size-[420px] rounded-full bg-sage-200/60 blur-3xl" />
-          <div className="absolute -bottom-10 left-0 size-[300px] rounded-full bg-terra-200/50 blur-3xl" />
+          <Pip size="lg" className="absolute right-10 top-0 z-10" />
+          <div className="absolute -right-24 -top-16 size-[420px] rounded-full bg-[#d6ecff] blur-3xl" />
+          <div className="absolute -bottom-10 left-0 size-[300px] rounded-full bg-[#fff7d1] blur-3xl" />
 
           <div className="absolute left-2 top-4 w-72 rotate-[-3deg] rounded-[1.5rem] bg-white p-5 shadow-lift">
             <div className="flex items-center gap-3">
@@ -63,7 +64,7 @@ export default function Landing() {
                 <p className="text-xs text-ink-500">92% match · gardening, the coast</p>
               </div>
             </div>
-            <p className="mt-3 rounded-xl bg-sage-50 p-3 text-[13px] leading-snug text-sage-800">
+            <p className="mt-3 rounded-xl bg-[#d6ecff] p-3 text-[13px] leading-snug text-[#245993]">
               “growing roses” connects with “gardening and house plants”
             </p>
           </div>
@@ -89,17 +90,20 @@ export default function Landing() {
       </section>
 
       {/* How it works */}
-      <section id="how" className="border-y border-ink-900/[0.06] bg-cream-50/70 py-20">
+      <section id="how" className="border-y-2 border-[#111d3a]/10 bg-white py-20">
         <div className="mx-auto max-w-6xl px-6">
-          <h2 className="max-w-2xl font-display text-4xl font-semibold tracking-tight">Not one conversation. A friendship that remembers.</h2>
-          <p className="mt-3 max-w-2xl text-ink-600">Most practice apps forget you the moment the call ends. Kindred keeps the thread — so every call builds on the last.</p>
+          <div className="max-w-3xl">
+            <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#3f87d2]">How Kindred works</p>
+            <h2 className="mt-2 max-w-2xl text-5xl font-bold leading-tight tracking-tight text-[#111d3a]">Not one conversation.<br /><span className="text-[#3f87d2]">A friendship that remembers.</span></h2>
+            <p className="mt-4 max-w-2xl text-lg leading-relaxed text-[#314267]">Small steps, real people, and a little help from Pip. Every call makes the next one feel easier.</p>
+          </div>
           <div className="mt-12 grid gap-5 md:grid-cols-3">
             {[
-              { icon: HeartHandshake, title: "Matched by what you love", body: "We understand that “growing roses” and “gardening” belong together, and find time slots that work across time zones.", tone: "bg-sage-100 text-sage-700" },
-              { icon: CalendarHeart, title: "Talk, face to face", body: "Schedule weekly calls and join with one click — right in the browser. Recording only ever happens if you both say yes.", tone: "bg-terra-100 text-terra-600" },
-              { icon: BookHeart, title: "Grow & remember", body: "Students get kind, specific feedback and spoken practice. Seniors get an editable Memory Book of the stories they told.", tone: "bg-gold-100 text-gold-500" },
+              { icon: HeartHandshake, title: "Find your people", body: "We connect you with someone who enjoys the same things, then help you find a time that works.", tone: "bg-[#d6ecff] text-[#245993]" },
+              { icon: CalendarHeart, title: "Take it one step at a time", body: "Schedule a weekly conversation and join in your browser. Recording only happens if both people say yes.", tone: "bg-[#fff7d1] text-[#6e5708]" },
+              { icon: BookHeart, title: "Keep the thread going", body: "Practice, feedback, and shared memories make each conversation feel more familiar than the last.", tone: "bg-[#111d3a] text-white" },
             ].map((c) => (
-              <div key={c.title} className="rounded-[1.5rem] bg-white p-7 shadow-soft">
+              <div key={c.title} className="rounded-[1.75rem] border-2 border-[#111d3a]/10 bg-[#f8fbff] p-7 shadow-[0_6px_0_#d6ecff]">
                 <span className={`flex size-12 items-center justify-center rounded-2xl ${c.tone}`}><c.icon className="size-6" /></span>
                 <h3 className="mt-5 font-display text-xl font-semibold">{c.title}</h3>
                 <p className="mt-2 leading-relaxed text-ink-600">{c.body}</p>

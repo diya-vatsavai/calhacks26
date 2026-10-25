@@ -7,13 +7,18 @@ export function Logo({ className, size = "md" }: { className?: string; size?: "s
   const s = size === "lg" ? "text-3xl" : size === "sm" ? "text-lg" : "text-2xl";
   return (
     <span className={cn("inline-flex items-center gap-2 font-display font-semibold tracking-tight text-ink-900", s, className)}>
-      <svg viewBox="0 0 32 32" className={size === "lg" ? "size-9" : size === "sm" ? "size-6" : "size-7"} aria-hidden>
-        <circle cx="12" cy="16" r="9" fill="var(--color-sage-400)" opacity="0.9" />
-        <circle cx="20" cy="16" r="9" fill="var(--color-terra-300)" opacity="0.85" />
-        <path d="M16 9.2a9 9 0 0 1 0 13.6a9 9 0 0 1 0-13.6Z" fill="var(--color-gold-300)" />
-      </svg>
+      <img src="/pip.png" alt="" className={cn("object-contain", size === "lg" ? "size-11" : size === "sm" ? "size-7" : "size-9")} />
       Kindred
     </span>
+  );
+}
+
+export function Pip({ className, size = "md" }: { className?: string; size?: "sm" | "md" | "lg" }) {
+  const dims = { sm: "size-16", md: "size-24", lg: "size-36" }[size];
+  return (
+    <div className={cn("relative inline-flex shrink-0 items-center justify-center", dims, className)} role="img" aria-label="Pip the Kindred lamb">
+      <img src="/pip.png" alt="" className="size-full object-contain" />
+    </div>
   );
 }
 

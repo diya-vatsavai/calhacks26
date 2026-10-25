@@ -60,7 +60,7 @@ export default function IntegrationMonitor() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-semibold">Sponsor integration monitor</h1>
+          <h1 className="text-5xl font-bold text-[#111d3a]">Sponsor integration monitor</h1>
           <p className="text-sm text-ink-600">Real operations logged by the app. No API keys, conversation content or personal data are shown.</p>
         </div>
         <div className="flex items-center gap-3 rounded-xl bg-white px-4 py-2 shadow-soft">

@@ -4,7 +4,7 @@ import { Area, AreaChart, Bar, BarChart, CartesianGrid, Legend, Line, LineChart,
 import { BarChart3, Clock, Flame, Mic2, Target } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DemoTag, EmptyState, PageLoader, Stat } from "@/components/kindred/basics";
+import { DemoTag, EmptyState, PageLoader, Pip, Stat } from "@/components/kindred/basics";
 import { useViewer } from "@/components/kindred/shells";
 
 const tip = { borderRadius: 12, border: "none", boxShadow: "0 8px 24px -8px rgb(0 0 0 / .2)", fontSize: 12 };
@@ -15,11 +15,12 @@ export default function Progress() {
   if (!p) return <PageLoader />;
   return (
     <div className="space-y-8">
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      <div className="relative flex flex-wrap items-center justify-between gap-3 overflow-hidden rounded-[2rem] border-2 border-[#111d3a]/10 bg-[#fff7d1] px-6 py-7 sm:px-10">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-terra-500">Learning progress</p>
-          <h1 className="mt-1 font-display text-4xl font-semibold tracking-tight">How you&apos;re growing</h1>
+          <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#314267]">Learning progress</p>
+          <h1 className="mt-1 text-5xl font-bold tracking-tight text-[#111d3a]">How you&apos;re growing</h1>
         </div>
+        <Pip size="lg" className="hidden sm:block" />
         {p.hasDemoData && <DemoTag>Includes seeded demo history</DemoTag>}
       </div>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">

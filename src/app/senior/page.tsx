@@ -4,7 +4,7 @@ import { useQuery } from "convex/react";
 import { BookHeart, CalendarPlus, Heart, PenLine, Phone, Users } from "lucide-react";
 import { api } from "../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
-import { EmptyState, PersonAvatar, SourceTag } from "@/components/kindred/basics";
+import { EmptyState, PersonAvatar, Pip, SourceTag } from "@/components/kindred/basics";
 import { useViewer } from "@/components/kindred/shells";
 import { IncomingRequests, UpcomingCalls, useCallNow } from "@/components/kindred/social";
 import { firstName, fmtDuration, relativeDay } from "@/lib/utils";
@@ -23,21 +23,26 @@ export default function SeniorHome() {
     {
       label: "Call a Buddy",
       icon: Phone,
-      cls: "bg-terra-400 text-white hover:bg-terra-500",
+      cls: "bg-[#6bb1f3] text-[#111d3a] hover:bg-[#3f87d2]",
       onClick: buddies?.length === 1 ? () => callNow(buddies[0].relationshipId) : undefined,
       href: buddies?.length === 1 ? undefined : "/senior/friends",
       sub: buddies?.length === 1 ? `Call ${firstName(buddies[0].buddy.name)} now` : "Choose a friend to call",
     },
-    { label: "Schedule a Conversation", icon: CalendarPlus, cls: "bg-sage-600 text-white hover:bg-sage-700", href: "/senior/friends", sub: "Pick a time that suits you" },
+    { label: "Schedule a Conversation", icon: CalendarPlus, cls: "bg-[#fff7d1] text-[#111d3a] hover:bg-[#ffefa1]", href: "/senior/friends", sub: "Pick a time that suits you" },
     { label: "My Memory Book", icon: BookHeart, cls: "bg-gold-300 text-ink-900 hover:bg-gold-400", href: "/senior/memories", sub: memories?.total ? `${memories.total} memories` : "Your stories, kept safe" },
     { label: "My Friends", icon: Users, cls: "bg-white text-ink-900 hover:bg-cream-50 border-2 border-ink-900/10", href: "/senior/friends", sub: buddies?.length ? `${buddies.length} ${buddies.length === 1 ? "friend" : "friends"}` : "Meet someone new" },
   ];
 
   return (
     <div className="space-y-12">
-      <section>
-        <p className="text-xl text-ink-600">{greet},</p>
-        <h1 className="font-display text-5xl font-semibold tracking-tight sm:text-6xl">{firstName(viewer.name)}</h1>
+      <section className="relative overflow-hidden rounded-[2rem] border-2 border-[#111d3a]/10 bg-[#fff7d1] px-6 py-7 sm:px-10">
+        <div className="relative z-10 flex items-center justify-between gap-6">
+          <div>
+            <p className="text-xl text-[#314267]">{greet},</p>
+            <h1 className="text-6xl font-bold tracking-tight text-[#111d3a] sm:text-7xl">{firstName(viewer.name)}</h1>
+          </div>
+          <Pip size="lg" className="hidden sm:block" />
+        </div>
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2" aria-label="Main actions">

@@ -1,24 +1,23 @@
 "use client";
-import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { use, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
-import { BookHeart, Circle, Lightbulb, Loader2, MessageSquareText, Mic, MicOff, PhoneOff, ShieldCheck, Star, Video, VideoOff } from "lucide-react";
+import { BookHeart, Circle, Loader2, MessageSquareText, Mic, MicOff, PhoneOff, ShieldCheck, Star, Video, VideoOff } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/input";
-import { Logo, PageLoader, PersonAvatar } from "@/components/kindred/basics";
+import { Logo, PageLoader, PersonAvatar, Pip } from "@/components/kindred/basics";
 import { RoleGate, homeFor } from "@/components/kindred/shells";
 import { cn, firstName } from "@/lib/utils";
 import { convexErrorMessage, useApi } from "@/lib/api";
 import { pickMimeType } from "@/lib/audio";
+import { CaptionOverlay, LambPanel, LambReceipt, useLamb, useLiveCaptions } from "@/components/kindred/lamb";
 
 // Used only if /api/ice can't be reached. Relay (TURN) servers come from /api/ice.
 const FALLBACK_ICE: RTCIceServer[] = [{ urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] }];
-
-const GENERIC_PROMPTS = ["What's something that made you smile this week?", "What did you love doing when you were twenty?", "What's a food that reminds you of home?", "Where is a place you'd love to visit?"];
 
 type Phase = "lobby" | "connecting" | "connected" | "ended";
 
@@ -45,12 +44,12 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
   const [consent, setConsent] = useState(false);
   const [recording, setRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
-  const [showPrompts, setShowPrompts] = useState(true);
   const [mediaError, setMediaError] = useState<string | null>(null);
   const [relay, setRelay] = useState<"metered" | "static" | "none">("none");
   const [stalled, setStalled] = useState(false);
   const callApi = useApi();
   const iceServers = useRef<RTCIceServer[]>(FALLBACK_ICE);
+  const [captionsOn, setCaptionsOn] = useState<boolean | null>(null);
 
   const localStream = useRef<MediaStream | null>(null);
   const localVideoEl = useRef<HTMLVideoElement>(null);
@@ -73,6 +72,26 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
   // Authoritative consent lives on the Convex conversation record (set by calls.setConsent);
   // presence heartbeats can lag, so they're only used for labels, never to gate recording.
   const bothConsented = Boolean(consent && data?.conversation?.studentConsent && data?.conversation?.seniorConsent);
+  const conversationId = data?.call.conversationId;
+  const isSenior = data?.myRole === "senior";
+
+  // Live captions and the Lamb share one consent: both people agreed to transcription.
+  const lambPrefs = useQuery(api.lamb.prefs);
+  const captionsVisible = captionsOn ?? (isSenior ? false : (lambPrefs?.captions ?? true));
+  const captions = useLiveCaptions({
+    enabled: captionsVisible && phase === "connected" && bothConsented && !!conversationId,
+    conversationId,
+    startKey: `${phase}:${hasVideo}:${remoteVideo}`,
+    sources: () => [
+      { speaker: "self", stream: localStream.current },
+      { speaker: "buddy", stream: (remoteAudioEl.current?.srcObject as MediaStream | null) ?? null },
+    ],
+  });
+  const lamb = useLamb({ enabled: !isSenior, conversationId, consented: bothConsented, connected: phase === "connected", segments: captions.segments });
+  function toggleCaptions(next: boolean) {
+    setCaptionsOn(next);
+    if (!isSenior) lamb.setCaptionsPref(next);
+  }
 
   // ---- media ----
   const startMedia = useCallback(async (wantVideo: boolean) => {
@@ -303,13 +322,6 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
     await setConsentM({ callId, consent: v }).catch((e) => toast.error(convexErrorMessage(e)));
   }
 
-  const prompts = useMemo(() => {
-    const p: string[] = [];
-    for (const t of data?.priorTopics ?? []) p.push(`Follow up: ${t}`);
-    for (const i of data?.sharedInterests ?? []) p.push(`You both enjoy ${i} — how did you get into it?`);
-    return [...p, ...GENERIC_PROMPTS].slice(0, 5);
-  }, [data]);
-
   if (!data) return <PageLoader />;
   const senior = data.myRole === "senior";
   const mmss = `${String(Math.floor(elapsed / 60)).padStart(2, "0")}:${String(elapsed % 60).padStart(2, "0")}`;
@@ -318,11 +330,12 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
 
   if (phase === "lobby") {
     return (
-      <div className={cn("flex min-h-screen flex-col items-center justify-center bg-cream-100 px-6", senior && "senior")}>
+      <div className={cn("student flex min-h-screen flex-col items-center justify-center bg-[#e5f1fe] px-6", senior && "senior")}>
         <Logo className="mb-10" />
-        <div className="w-full max-w-lg rounded-[2rem] bg-white p-8 text-center shadow-lift">
+        {!senior && <Pip size="md" className="mb-2" />}
+        <div className="w-full max-w-lg rounded-[2rem] border-2 border-[#111d3a]/10 bg-white p-8 text-center shadow-lift">
           <PersonAvatar avatar={buddy?.avatar} color={buddy?.avatarColor} name={buddy?.name} size="xl" ring className="mx-auto" />
-          <h1 className={cn("mt-5 font-display font-semibold", senior ? "text-4xl" : "text-3xl")}>Ready to talk with {firstName(buddy?.name)}?</h1>
+          <h1 className={cn("mt-5 font-display font-semibold", senior ? "text-4xl" : "text-4xl text-[#111d3a]")}>Ready to talk with {firstName(buddy?.name)}?</h1>
           <p className="mt-2 text-ink-600">{data.call.topic ? `Topic: ${data.call.topic}` : "Your camera and microphone will turn on when you join."}</p>
           {data.call.status === "proposed" && <p className="mt-4 rounded-xl bg-gold-100 p-3 text-sm">This call hasn&apos;t been confirmed yet.</p>}
           {mediaError && <p className="mt-4 rounded-xl bg-[#fbe3dd] p-3 text-sm text-[#a63a25]">{mediaError}</p>}
@@ -337,7 +350,7 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
   }
 
   return (
-    <div className={cn("flex min-h-screen flex-col bg-ink-900 text-cream-50", senior && "senior")}>
+    <div className={cn("flex min-h-screen flex-col bg-[#111d3a] text-cream-50", senior && "senior")}>
       <header className="flex flex-wrap items-center gap-3 px-5 py-4">
         <PersonAvatar avatar={buddy?.avatar} color={buddy?.avatarColor} name={buddy?.name} size="sm" />
         <div className="flex-1">
@@ -354,8 +367,8 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
         </div>
       </header>
 
-      <div className="relative flex flex-1 gap-4 px-5 pb-4">
-        <div className="relative flex flex-1 items-center justify-center overflow-hidden rounded-[1.75rem] bg-black/40">
+      <div className="relative flex flex-1 flex-col gap-4 px-5 pb-4 md:flex-row">
+        <div className="relative flex min-h-[34vh] flex-1 items-center justify-center overflow-hidden rounded-[1.75rem] bg-black/40">
           <video ref={remoteVideoEl} autoPlay playsInline muted className={cn("size-full object-cover", (!remoteVideo || !other?.camOn) && "hidden")} />
           <audio ref={remoteAudioEl} autoPlay />
           {(!remoteVideo || !other?.camOn) && (
@@ -378,21 +391,40 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
           {hasVideo && (
             <video ref={localVideoEl} autoPlay playsInline muted className={cn("absolute bottom-4 right-4 aspect-video w-40 rounded-2xl border-2 border-white/20 object-cover shadow-lift sm:w-56", !camOn && "opacity-0")} style={{ transform: "scaleX(-1)" }} />
           )}
+          {captionsVisible && (
+            <CaptionOverlay
+              segments={captions.segments}
+              buddyName={buddy?.name ?? ""}
+              onWord={(word, context) => void lamb.ask("gloss", "asked", { phrase: word, stall: context })}
+            />
+          )}
         </div>
-        {showPrompts && (
-          <aside className="hidden w-72 shrink-0 flex-col rounded-[1.75rem] bg-white/[0.06] p-5 md:flex">
-            <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-gold-300"><Lightbulb className="size-4" /> Conversation ideas</p>
-            <ul className="mt-4 space-y-3">
-              {prompts.map((p) => <li key={p} className={cn("rounded-2xl bg-white/[0.06] p-3 text-cream-100", senior ? "text-lg" : "text-sm")}>{p}</li>)}
-            </ul>
-          </aside>
+        {!isSenior && conversationId && (
+          <LambPanel
+            lamb={lamb}
+            buddyName={buddy?.name ?? ""}
+            consented={bothConsented}
+            onRequestConsent={() => void toggleConsent(true)}
+            captionsOn={captionsVisible}
+            onToggleCaptions={toggleCaptions}
+            captionsStatus={captions.status}
+          />
         )}
       </div>
 
       <div className="flex items-center justify-center gap-3 px-5 pb-8">
         <Button size="iconLg" variant="ghost" className={cn("bg-white/10 text-white hover:bg-white/20", !micOn && "bg-white text-ink-900 hover:bg-white")} onClick={toggleMic} aria-label={micOn ? "Mute" : "Unmute"}>{micOn ? <Mic /> : <MicOff />}</Button>
         {hasVideo && <Button size="iconLg" variant="ghost" className={cn("bg-white/10 text-white hover:bg-white/20", !camOn && "bg-white text-ink-900 hover:bg-white")} onClick={toggleCam} aria-label={camOn ? "Turn camera off" : "Turn camera on"}>{camOn ? <Video /> : <VideoOff />}</Button>}
-        <Button size="iconLg" variant="ghost" className="hidden bg-white/10 text-white hover:bg-white/20 md:inline-flex" onClick={() => setShowPrompts(!showPrompts)} aria-label="Toggle conversation ideas"><Lightbulb /></Button>
+        <Button
+          size="iconLg"
+          variant="ghost"
+          className={cn("text-sm font-bold", captionsVisible ? "bg-gold-300 text-ink-900 hover:bg-gold-200" : "bg-white/10 text-white hover:bg-white/20")}
+          onClick={() => toggleCaptions(!captionsVisible)}
+          aria-label={captionsVisible ? "Turn live captions off" : "Turn live captions on"}
+          aria-pressed={captionsVisible}
+        >
+          CC
+        </Button>
         <Button size="xl" variant="danger" className="px-8" onClick={() => finish(true)}><PhoneOff /> End call</Button>
       </div>
       {me === undefined && <p className="pb-2 text-center text-xs text-cream-200/50">Joining…</p>}
@@ -412,8 +444,9 @@ function EndScreen({ callId, senior, buddyName, elapsed }: { callId: Id<"schedul
   const idx = conv ? steps.indexOf(conv.processing) : -1;
   const dur = conv?.durationSec ?? elapsed;
   return (
-    <div className={cn("flex min-h-screen items-center justify-center bg-cream-100 px-6 py-12", senior && "senior")}>
-      <div className="w-full max-w-xl rounded-[2rem] bg-white p-8 shadow-lift">
+    <div className={cn("student flex min-h-screen items-center justify-center bg-[#e5f1fe] px-6 py-12", senior && "senior")}>
+      <div className="w-full max-w-xl rounded-[2rem] border-2 border-[#111d3a]/10 bg-white p-8 shadow-lift">
+        {!senior && <Pip size="sm" />}
         <p className="text-sm font-bold uppercase tracking-[0.14em] text-terra-500">Call ended · {Math.max(1, Math.round(dur / 60))} min</p>
         <h1 className={cn("mt-2 font-display font-semibold", senior ? "text-4xl" : "text-3xl")}>How was your conversation with {firstName(buddyName)}?</h1>
         <div className="mt-6 flex gap-2" role="radiogroup" aria-label="Rating">
@@ -449,6 +482,7 @@ function EndScreen({ callId, senior, buddyName, elapsed }: { callId: Id<"schedul
             </div>
           )}
         </div>
+        {conv && !senior && <LambReceipt conversationId={conv._id} />}
         <div className="mt-6 flex flex-wrap gap-2">
           {conv?.processing === "complete" &&
             (senior ? (
