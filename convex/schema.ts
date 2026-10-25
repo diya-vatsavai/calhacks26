@@ -353,6 +353,43 @@ export default defineSchema({
     .index("by_owner_buddy", ["ownerId", "buddyId"])
     .index("by_moss_status", ["mossStatus"]),
 
+  // The Lamb's settings. Per student, so the support they choose follows them between calls.
+  lambPrefs: defineTable({
+    studentId: v.id("users"),
+    support: v.union(v.literal("off"), v.literal("gentle"), v.literal("helpful"), v.literal("guided")),
+    captions: v.boolean(),
+    translate: v.boolean(),
+    updatedAt: v.number(),
+  }).index("by_student", ["studentId"]),
+
+  // Every time the Lamb helps. This is also the per-call proactivity budget (see lamb.assist),
+  // which is what keeps the assistant from becoming a crutch, and the post-call "what helped" list.
+  lambMoments: defineTable({
+    conversationId: v.id("conversations"),
+    studentId: v.id("users"),
+    kind: v.union(v.literal("spark"), v.literal("rescue"), v.literal("gloss")),
+    trigger: v.union(v.literal("asked"), v.literal("hesitation"), v.literal("lull"), v.literal("rare_phrase")),
+    text: v.string(),
+    detail: v.optional(v.string()),
+    phrase: v.optional(v.string()),
+    source: v.union(v.literal("llm"), v.literal("rules")),
+    latencyMs: v.optional(v.number()),
+    createdAt: v.number(),
+    dismissedAt: v.optional(v.number()),
+  })
+    .index("by_conversation", ["conversationId", "createdAt"])
+    .index("by_kind", ["conversationId", "kind", "createdAt"]),
+
+  // Live captions, one row per spoken segment, written by the caption service after Cartesia Ink.
+  callCaptions: defineTable({
+    conversationId: v.id("conversations"),
+    speaker: v.union(v.literal("student"), v.literal("senior")),
+    text: v.string(),
+    latencyMs: v.number(),
+    durationSec: v.number(),
+    createdAt: v.number(),
+  }).index("by_conversation", ["conversationId", "createdAt"]),
+
   integrationEvents: defineTable({
     service: v.union(v.literal("convex"), v.literal("cartesia"), v.literal("moss"), v.literal("llm"), v.literal("webrtc")),
     operation: v.string(),

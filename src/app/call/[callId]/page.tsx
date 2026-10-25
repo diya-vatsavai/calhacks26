@@ -1,9 +1,9 @@
 "use client";
-import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { use, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
-import { BookHeart, Circle, Lightbulb, Loader2, MessageSquareText, Mic, MicOff, PhoneOff, ShieldCheck, Star, Video, VideoOff } from "lucide-react";
+import { BookHeart, Circle, Loader2, MessageSquareText, Mic, MicOff, PhoneOff, ShieldCheck, Star, Video, VideoOff } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { RoleGate, homeFor } from "@/components/kindred/shells";
 import { cn, firstName } from "@/lib/utils";
 import { convexErrorMessage } from "@/lib/api";
 import { pickMimeType } from "@/lib/audio";
+import { CaptionOverlay, LambPanel, LambReceipt, useLamb, useLiveCaptions } from "@/components/kindred/lamb";
 
 const ICE: RTCIceServer[] = [
   { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
@@ -21,8 +22,6 @@ const ICE: RTCIceServer[] = [
     ? [{ urls: process.env.NEXT_PUBLIC_TURN_URL, username: process.env.NEXT_PUBLIC_TURN_USERNAME, credential: process.env.NEXT_PUBLIC_TURN_CREDENTIAL }]
     : []),
 ];
-
-const GENERIC_PROMPTS = ["What's something that made you smile this week?", "What did you love doing when you were twenty?", "What's a food that reminds you of home?", "Where is a place you'd love to visit?"];
 
 type Phase = "lobby" | "connecting" | "connected" | "ended";
 
@@ -49,8 +48,8 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
   const [consent, setConsent] = useState(false);
   const [recording, setRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
-  const [showPrompts, setShowPrompts] = useState(true);
   const [mediaError, setMediaError] = useState<string | null>(null);
+  const [captionsOn, setCaptionsOn] = useState<boolean | null>(null);
 
   const localStream = useRef<MediaStream | null>(null);
   const localVideoEl = useRef<HTMLVideoElement>(null);
@@ -73,6 +72,26 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
   // Authoritative consent lives on the Convex conversation record (set by calls.setConsent);
   // presence heartbeats can lag, so they're only used for labels, never to gate recording.
   const bothConsented = Boolean(consent && data?.conversation?.studentConsent && data?.conversation?.seniorConsent);
+  const conversationId = data?.call.conversationId;
+  const isSenior = data?.myRole === "senior";
+
+  // Live captions and the Lamb share one consent: both people agreed to transcription.
+  const lambPrefs = useQuery(api.lamb.prefs);
+  const captionsVisible = captionsOn ?? (isSenior ? false : (lambPrefs?.captions ?? true));
+  const captions = useLiveCaptions({
+    enabled: captionsVisible && phase === "connected" && bothConsented && !!conversationId,
+    conversationId,
+    startKey: `${phase}:${hasVideo}:${remoteVideo}`,
+    sources: () => [
+      { speaker: "self", stream: localStream.current },
+      { speaker: "buddy", stream: (remoteAudioEl.current?.srcObject as MediaStream | null) ?? null },
+    ],
+  });
+  const lamb = useLamb({ enabled: !isSenior, conversationId, consented: bothConsented, connected: phase === "connected", segments: captions.segments });
+  function toggleCaptions(next: boolean) {
+    setCaptionsOn(next);
+    if (!isSenior) lamb.setCaptionsPref(next);
+  }
 
   // ---- media ----
   const startMedia = useCallback(async (wantVideo: boolean) => {
@@ -284,13 +303,6 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
     await setConsentM({ callId, consent: v }).catch((e) => toast.error(convexErrorMessage(e)));
   }
 
-  const prompts = useMemo(() => {
-    const p: string[] = [];
-    for (const t of data?.priorTopics ?? []) p.push(`Follow up: ${t}`);
-    for (const i of data?.sharedInterests ?? []) p.push(`You both enjoy ${i} — how did you get into it?`);
-    return [...p, ...GENERIC_PROMPTS].slice(0, 5);
-  }, [data]);
-
   if (!data) return <PageLoader />;
   const senior = data.myRole === "senior";
   const mmss = `${String(Math.floor(elapsed / 60)).padStart(2, "0")}:${String(elapsed % 60).padStart(2, "0")}`;
@@ -335,8 +347,8 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
         </div>
       </header>
 
-      <div className="relative flex flex-1 gap-4 px-5 pb-4">
-        <div className="relative flex flex-1 items-center justify-center overflow-hidden rounded-[1.75rem] bg-black/40">
+      <div className="relative flex flex-1 flex-col gap-4 px-5 pb-4 md:flex-row">
+        <div className="relative flex min-h-[34vh] flex-1 items-center justify-center overflow-hidden rounded-[1.75rem] bg-black/40">
           <video ref={remoteVideoEl} autoPlay playsInline muted className={cn("size-full object-cover", (!remoteVideo || !other?.camOn) && "hidden")} />
           <audio ref={remoteAudioEl} autoPlay />
           {(!remoteVideo || !other?.camOn) && (
@@ -348,21 +360,40 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
           {hasVideo && (
             <video ref={localVideoEl} autoPlay playsInline muted className={cn("absolute bottom-4 right-4 aspect-video w-40 rounded-2xl border-2 border-white/20 object-cover shadow-lift sm:w-56", !camOn && "opacity-0")} style={{ transform: "scaleX(-1)" }} />
           )}
+          {captionsVisible && (
+            <CaptionOverlay
+              segments={captions.segments}
+              buddyName={buddy?.name ?? ""}
+              onWord={(word, context) => void lamb.ask("gloss", "asked", { phrase: word, stall: context })}
+            />
+          )}
         </div>
-        {showPrompts && (
-          <aside className="hidden w-72 shrink-0 flex-col rounded-[1.75rem] bg-white/[0.06] p-5 md:flex">
-            <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-gold-300"><Lightbulb className="size-4" /> Conversation ideas</p>
-            <ul className="mt-4 space-y-3">
-              {prompts.map((p) => <li key={p} className={cn("rounded-2xl bg-white/[0.06] p-3 text-cream-100", senior ? "text-lg" : "text-sm")}>{p}</li>)}
-            </ul>
-          </aside>
+        {!isSenior && conversationId && (
+          <LambPanel
+            lamb={lamb}
+            buddyName={buddy?.name ?? ""}
+            consented={bothConsented}
+            onRequestConsent={() => void toggleConsent(true)}
+            captionsOn={captionsVisible}
+            onToggleCaptions={toggleCaptions}
+            captionsStatus={captions.status}
+          />
         )}
       </div>
 
       <div className="flex items-center justify-center gap-3 px-5 pb-8">
         <Button size="iconLg" variant="ghost" className={cn("bg-white/10 text-white hover:bg-white/20", !micOn && "bg-white text-ink-900 hover:bg-white")} onClick={toggleMic} aria-label={micOn ? "Mute" : "Unmute"}>{micOn ? <Mic /> : <MicOff />}</Button>
         {hasVideo && <Button size="iconLg" variant="ghost" className={cn("bg-white/10 text-white hover:bg-white/20", !camOn && "bg-white text-ink-900 hover:bg-white")} onClick={toggleCam} aria-label={camOn ? "Turn camera off" : "Turn camera on"}>{camOn ? <Video /> : <VideoOff />}</Button>}
-        <Button size="iconLg" variant="ghost" className="hidden bg-white/10 text-white hover:bg-white/20 md:inline-flex" onClick={() => setShowPrompts(!showPrompts)} aria-label="Toggle conversation ideas"><Lightbulb /></Button>
+        <Button
+          size="iconLg"
+          variant="ghost"
+          className={cn("text-sm font-bold", captionsVisible ? "bg-gold-300 text-ink-900 hover:bg-gold-200" : "bg-white/10 text-white hover:bg-white/20")}
+          onClick={() => toggleCaptions(!captionsVisible)}
+          aria-label={captionsVisible ? "Turn live captions off" : "Turn live captions on"}
+          aria-pressed={captionsVisible}
+        >
+          CC
+        </Button>
         <Button size="xl" variant="danger" className="px-8" onClick={() => finish(true)}><PhoneOff /> End call</Button>
       </div>
       {me === undefined && <p className="pb-2 text-center text-xs text-cream-200/50">Joining…</p>}
@@ -419,6 +450,7 @@ function EndScreen({ callId, senior, buddyName, elapsed }: { callId: Id<"schedul
             </div>
           )}
         </div>
+        {conv && !senior && <LambReceipt conversationId={conv._id} />}
         <div className="mt-6 flex flex-wrap gap-2">
           {conv?.processing === "complete" &&
             (senior ? (
