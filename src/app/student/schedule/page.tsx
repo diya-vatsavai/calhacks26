@@ -10,7 +10,7 @@ export default function StudentSchedule() {
   return (
     <div className="space-y-10">
       <div>
-        <p className="text-xs font-bold uppercase tracking-[0.14em] text-terra-500">Calls</p>
+        <p className="text-xs font-semibold text-terra-500">Calls</p>
         <h1 className="mt-1 font-display text-4xl font-semibold tracking-tight">Your conversations</h1>
       </div>
       <section>

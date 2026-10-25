@@ -168,7 +168,7 @@ function Studio() {
     return (
       <div className="space-y-8">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-terra-500">AI Practice Studio</p>
+          <p className="text-xs font-semibold text-terra-500">AI Practice Studio</p>
           <h1 className="mt-1 font-display text-4xl font-semibold tracking-tight sm:text-5xl">Practice out loud with your coach</h1>
           <p className="mt-2 max-w-2xl text-ink-600">
             Your coach remembers what came up in your real conversations (via Moss), speaks with a natural voice (Cartesia Sonic), and listens to your answers (Cartesia Ink).
@@ -216,7 +216,7 @@ function Studio() {
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-terra-100 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-terra-600">{exercise.type}</span>
+              <span className="rounded-full bg-terra-100 px-2.5 py-0.5 text-xs font-semibold text-terra-600">{exercise.type}</span>
               <SourceTag source={exercise.generatedBy} />
             </div>
             <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight">{exercise.title}</h1>
@@ -337,7 +337,7 @@ function Studio() {
       {/* Context rail */}
       <aside className="space-y-4">
         <div className="rounded-[1.25rem] bg-white p-5 shadow-soft">
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-terra-500">Why this exercise</p>
+          <p className="text-xs font-semibold text-terra-500">Why this exercise</p>
           <p className="mt-2 text-sm text-ink-700">{exercise.whyThis}</p>
           <div className="mt-3"><MossTag mode={exercise.retrievalMode === "none" ? undefined : exercise.retrievalMode} latencyMs={retrieval?.latencyMs} /></div>
           {exercise.retrievedContext.length > 0 ? (
@@ -354,7 +354,7 @@ function Studio() {
           )}
         </div>
         <div className="rounded-[1.25rem] bg-ink-900 p-5 text-cream-100 shadow-soft">
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-gold-300">Voice pipeline</p>
+          <p className="text-xs font-semibold text-gold-300">Voice pipeline</p>
           <ul className="mt-3 space-y-2 text-sm">
             <li className="flex items-center justify-between gap-2">
               <span>Coach voice</span>

@@ -8,11 +8,11 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-sage-600 text-white shadow-soft hover:bg-sage-700",
-        terra: "bg-terra-400 text-white shadow-soft hover:bg-terra-500",
-        gold: "bg-gold-300 text-ink-900 shadow-soft hover:bg-gold-400",
-        outline: "border border-ink-900/12 bg-white/70 text-ink-800 hover:bg-white hover:border-ink-900/20",
-        ghost: "text-ink-700 hover:bg-ink-900/5",
+        default: "bg-sage-600 text-white hover:bg-sage-700",
+        terra: "bg-terra-500 text-white hover:bg-terra-600",
+        gold: "bg-gold-400 text-ink-900 hover:bg-gold-300",
+        outline: "border border-ink-900/10 bg-white text-ink-800 hover:border-ink-900/20 hover:bg-cream-100",
+        ghost: "text-ink-700 hover:bg-ink-900/[0.06]",
         soft: "bg-sage-100 text-sage-800 hover:bg-sage-200",
         danger: "bg-[#c2452d] text-white hover:bg-[#a63a25]",
         link: "text-sage-700 underline-offset-4 hover:underline px-0",

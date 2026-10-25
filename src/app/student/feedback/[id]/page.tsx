@@ -64,7 +64,7 @@ export default function FeedbackDetail({ params }: { params: Promise<{ id: strin
             <div className="mt-3 space-y-2">
               {i.grammar.patterns.map((p, n) => (
                 <div key={n} className="rounded-xl bg-cream-100 p-3 text-sm">
-                  <p className="text-xs font-bold uppercase tracking-wide text-terra-500">{p.pattern}</p>
+                  <p className="text-xs font-semibold text-terra-500">{p.pattern}</p>
                   <p className="mt-1 text-ink-500">You said: “{p.heard}”</p>
                   <p className="font-semibold text-sage-700">Try: “{p.better}”</p>
                 </div>

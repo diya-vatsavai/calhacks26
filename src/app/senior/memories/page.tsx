@@ -208,7 +208,7 @@ function MemoryCard({ m, onEdit, speaker, draft, relevance, tilt = 0 }: { m: Mem
     <article id={m._id} className={cn("paper print-page relative rounded-[1.5rem] border border-ink-900/[0.06] p-6 shadow-soft transition hover:shadow-lift", draft && "border-2 border-dashed border-gold-400")} style={{ transform: `rotate(${tilt}deg)` }}>
       <span className="absolute -top-3 left-1/2 h-6 w-24 -translate-x-1/2 rotate-[-2deg] rounded-sm bg-gold-200/70 shadow-sm" aria-hidden />
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm font-bold uppercase tracking-wider text-terra-500">{new Date(m.date).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })} · with {m.buddyName}</p>
+        <p className="text-sm font-semibold text-terra-500">{new Date(m.date).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })} · with {m.buddyName}</p>
         <div className="flex items-center gap-2">
           {relevance != null && <span className="text-xs text-ink-400">relevance {relevance.toFixed(2)}</span>}
           <SourceTag source={m.source} />
@@ -219,13 +219,13 @@ function MemoryCard({ m, onEdit, speaker, draft, relevance, tilt = 0 }: { m: Mem
       <p className="mt-3 text-lg leading-relaxed text-ink-700">{m.summary}</p>
       {m.stories.length > 0 && (
         <div className="mt-4">
-          <p className="text-sm font-bold uppercase tracking-wider text-ink-500">Stories you shared</p>
+          <p className="text-sm font-semibold text-ink-500">Stories you shared</p>
           <ul className="mt-1 list-disc space-y-1 pl-5 text-lg text-ink-700">{m.stories.map((s, i) => <li key={i}>{s}</li>)}</ul>
         </div>
       )}
       {m.moments.length > 0 && (
         <div className="mt-3">
-          <p className="text-sm font-bold uppercase tracking-wider text-ink-500">A special moment</p>
+          <p className="text-sm font-semibold text-ink-500">A special moment</p>
           <p className="text-lg italic text-ink-700">{m.moments[0]}</p>
         </div>
       )}

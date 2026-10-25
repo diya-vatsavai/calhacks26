@@ -23,7 +23,7 @@ export default function SeniorHome() {
     {
       label: "Call a Buddy",
       icon: Phone,
-      cls: "bg-terra-400 text-white hover:bg-terra-500",
+      cls: "bg-terra-500 text-white hover:bg-terra-600",
       onClick: buddies?.length === 1 ? () => callNow(buddies[0].relationshipId) : undefined,
       href: buddies?.length === 1 ? undefined : "/senior/friends",
       sub: buddies?.length === 1 ? `Call ${firstName(buddies[0].buddy.name)} now` : "Choose a friend to call",
@@ -101,7 +101,7 @@ export default function SeniorHome() {
               {memories.highlights.map((m) => (
                 <Link key={m._id} href={`/senior/memories#${m._id}`} className="paper block rounded-[1.5rem] border border-ink-900/5 p-5 shadow-soft transition hover:shadow-lift">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-bold uppercase tracking-wider text-terra-500">{new Date(m.date).toLocaleDateString(undefined, { month: "long", day: "numeric" })} · with {firstName(m.buddyName)}</p>
+                    <p className="text-sm font-semibold text-terra-500">{new Date(m.date).toLocaleDateString(undefined, { month: "long", day: "numeric" })} · with {firstName(m.buddyName)}</p>
                     <SourceTag source={m.source} />
                   </div>
                   <p className="mt-1 font-display text-2xl font-semibold">{m.title}</p>

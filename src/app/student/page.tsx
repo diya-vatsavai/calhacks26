@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useQuery } from "convex/react";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
-import { ArrowRight, CalendarPlus, Clock, HeartHandshake, Mic2, MessageSquareText, Target, Sparkles, Flame, Video } from "lucide-react";
+import { ArrowRight, CalendarPlus, Clock, HeartHandshake, Mic2, MessageSquareText, Target, Flame, Video } from "lucide-react";
 import { api } from "../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,19 +25,19 @@ export default function StudentHome() {
   const latest = insights?.[0];
 
   return (
-    <div className="space-y-10">
-      <section className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+    <div className="space-y-8">
+      <section className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-sm font-semibold text-ink-500">{greet},</p>
-          <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">{firstName(viewer.name)} <span className="inline-block animate-[rise_.6s_ease-out]">👋</span></h1>
-          <p className="mt-2 text-ink-600">
-            {progress?.totals.speakingMin ? <>You&apos;ve spoken English for <b>{progress.totals.speakingMin} minutes</b> on Kindred. Keep it going!</> : "Your first conversation is the hardest — and the best. Let's find you a buddy."}
+          <p className="text-sm font-semibold text-ink-500">{greet}</p>
+          <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">{firstName(viewer.name)}</h1>
+          <p className="mt-2 max-w-xl text-ink-600">
+            {progress?.totals.speakingMin ? <>You&apos;ve spoken English for <b className="text-ink-800">{progress.totals.speakingMin} minutes</b> on Kindred.</> : "Your first conversation is the hardest — and the best. Let's find you a buddy."}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button asChild size="lg"><Link href="/student/match"><HeartHandshake /> Find a buddy</Link></Button>
-          <Button asChild size="lg" variant="outline"><Link href="/student/schedule"><CalendarPlus /> Schedule a call</Link></Button>
-          <Button asChild size="lg" variant="terra"><Link href="/student/practice"><Mic2 /> Practice with AI</Link></Button>
+          <Button asChild size="lg" variant="soft"><Link href="/student/practice"><Mic2 /> Practice</Link></Button>
+          <Button asChild size="lg" variant="outline"><Link href="/student/schedule"><CalendarPlus /> Schedule</Link></Button>
         </div>
       </section>
 
@@ -45,27 +45,26 @@ export default function StudentHome() {
 
       <section className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
         {/* Next conversation */}
-        <div className="relative overflow-hidden rounded-[1.5rem] bg-ink-900 p-6 text-cream-50 shadow-lift">
-          <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-sage-500/30 blur-2xl" />
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-gold-300">Next conversation</p>
+        <div className="rounded-[1.5rem] bg-white p-6 shadow-soft">
+          <p className="text-sm font-semibold text-sage-600">Next conversation</p>
           {next ? (
-            <div className="relative mt-4 flex flex-wrap items-center gap-5">
+            <div className="mt-4 flex flex-wrap items-center gap-5">
               <PersonAvatar avatar={next.buddy.avatar} color={next.buddy.avatarColor} name={next.buddy.name} size="lg" ring />
               <div className="flex-1">
                 <p className="font-display text-2xl font-semibold">{next.buddy.name}</p>
-                <p className="text-cream-200">{relativeDay(next.startAt)} · {fmtWhen(next.startAt, { weekday: undefined, month: undefined, day: undefined })} · {next.durationMin} min</p>
-                {next.topic && <p className="mt-1 text-sm text-cream-200/80">Topic: {next.topic}</p>}
-                {next.status === "proposed" && <p className="mt-1 text-sm text-gold-200">{next.needsMyResponse ? "Waiting for you to confirm" : `Waiting for ${firstName(next.buddy.name)} to confirm`}</p>}
+                <p className="text-ink-600">{relativeDay(next.startAt)} · {fmtWhen(next.startAt, { weekday: undefined, month: undefined, day: undefined })} · {next.durationMin} min</p>
+                {next.topic && <p className="mt-1 text-sm text-ink-500">Topic: {next.topic}</p>}
+                {next.status === "proposed" && <p className="mt-1 text-sm font-semibold text-terra-600">{next.needsMyResponse ? "Waiting for you to confirm" : `Waiting for ${firstName(next.buddy.name)} to confirm`}</p>}
               </div>
               {next.status !== "proposed" && (
-                <Button asChild variant="gold" size="lg"><Link href={`/call/${next._id}`}><Video /> Join</Link></Button>
+                <Button asChild size="lg"><Link href={`/call/${next._id}`}><Video /> Join</Link></Button>
               )}
             </div>
           ) : (
-            <div className="relative mt-4">
+            <div className="mt-4">
               <p className="font-display text-2xl">Nothing scheduled yet</p>
-              <p className="mt-1 text-cream-200">Weekly calls with the same buddy help the most.</p>
-              <Button asChild variant="gold" className="mt-4"><Link href={buddies?.length ? "/student/schedule" : "/student/match"}>{buddies?.length ? "Schedule a call" : "Find a buddy"} <ArrowRight /></Link></Button>
+              <p className="mt-1 text-ink-600">Weekly calls with the same buddy help the most.</p>
+              <Button asChild className="mt-4"><Link href={buddies?.length ? "/student/schedule" : "/student/match"}>{buddies?.length ? "Schedule a call" : "Find a buddy"} <ArrowRight /></Link></Button>
             </div>
           )}
         </div>
@@ -81,7 +80,7 @@ export default function StudentHome() {
         <Card className="lg:col-span-2">
           <CardHeader className="flex-row items-center justify-between">
             <CardTitle>Recent feedback</CardTitle>
-            <Link href="/student/feedback" className="text-sm font-semibold text-sage-700 hover:underline">All feedback →</Link>
+            <Link href="/student/feedback" className="text-sm font-semibold text-sage-700 hover:underline">All feedback</Link>
           </CardHeader>
           <CardContent>
             {latest ? (
@@ -94,7 +93,7 @@ export default function StudentHome() {
                 <ol className="mt-4 space-y-2">
                   {latest.topImprovements.map((t, i) => (
                     <li key={i} className="flex gap-3 rounded-2xl bg-cream-100 p-3">
-                      <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-sage-600 text-sm font-bold text-white">{i + 1}</span>
+                      <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-sage-600 text-xs font-bold text-white">{i + 1}</span>
                       <span><span className="font-semibold">{t.title}</span><span className="block text-sm text-ink-600">{t.detail}</span></span>
                     </li>
                   ))}
@@ -110,15 +109,15 @@ export default function StudentHome() {
           <CardHeader><CardTitle>Recommended practice</CardTitle></CardHeader>
           <CardContent className="space-y-2">
             {(progress?.recurringWeaknesses.length ? progress.recurringWeaknesses.slice(0, 3) : (viewer.profile?.learningGoals ?? ["fluency"]).map((g) => ({ tag: GOAL_LABEL[g] ?? g, count: 0 }))).map((w) => (
-              <Link key={w.tag} href={`/student/practice?focus=${encodeURIComponent(w.tag)}`} className="group flex items-center justify-between rounded-2xl border border-ink-900/[0.06] bg-cream-50 p-3 transition hover:border-sage-300 hover:bg-sage-50">
+              <Link key={w.tag} href={`/student/practice?focus=${encodeURIComponent(w.tag)}`} className="group flex items-center justify-between rounded-2xl bg-cream-100 p-3 transition hover:bg-sage-50">
                 <span>
                   <span className="block font-semibold capitalize">{w.tag}</span>
                   <span className="text-xs text-ink-500">{w.count ? `Noticed in ${w.count} conversation${w.count > 1 ? "s" : ""}` : "From your goals"}</span>
                 </span>
-                <Sparkles className="size-4 text-sage-600 transition group-hover:scale-110" />
+                <ArrowRight className="size-4 text-sage-600 transition group-hover:translate-x-0.5" />
               </Link>
             ))}
-            <Button asChild variant="terra" className="mt-2 w-full"><Link href="/student/practice"><Mic2 /> Open Practice Studio</Link></Button>
+            <Button asChild className="mt-2 w-full"><Link href="/student/practice"><Mic2 /> Open Practice Studio</Link></Button>
           </CardContent>
         </Card>
       </section>
@@ -130,8 +129,8 @@ export default function StudentHome() {
             <div className="h-48">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={progress?.weeks ?? []} margin={{ top: 8, right: 0, left: 0, bottom: 0 }}>
-                  <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={11} stroke="#8a8378" />
-                  <Tooltip cursor={{ fill: "rgb(38 35 31 / 0.04)" }} contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 8px 24px -8px rgb(0 0 0 / .2)" }} />
+                  <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={11} stroke="#8d867c" />
+                  <Tooltip cursor={{ fill: "rgb(29 26 23 / 0.04)" }} contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 8px 24px -8px rgb(0 0 0 / .2)" }} />
                   <Bar dataKey="callMin" name="Call minutes" stackId="a" fill="var(--color-sage-400)" radius={[0, 0, 6, 6]} />
                   <Bar dataKey="practiceMin" name="Practice minutes" stackId="a" fill="var(--color-terra-300)" radius={[6, 6, 0, 0]} />
                 </BarChart>
@@ -141,11 +140,11 @@ export default function StudentHome() {
           </CardContent>
         </Card>
         <div>
-          <SectionTitle title="Your buddies" action={<Link href="/student/match" className="text-sm font-semibold text-sage-700">+ Find more</Link>} />
+          <SectionTitle title="Your buddies" action={<Link href="/student/match" className="text-sm font-semibold text-sage-700">Find more</Link>} />
           <div className="space-y-2">
             {buddies?.length ? (
               buddies.map((b) => (
-                <Link key={b.relationshipId} href="/student/schedule" className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-soft transition hover:shadow-lift">
+                <Link key={b.relationshipId} href="/student/schedule" className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-soft transition hover:bg-cream-50">
                   <PersonAvatar avatar={b.buddy.avatar} color={b.buddy.avatarColor} name={b.buddy.name} size="sm" />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-semibold">{b.buddy.name}{b.favorite && " ♥"}</span>

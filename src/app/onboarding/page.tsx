@@ -120,7 +120,7 @@ export default function Onboarding() {
           ))}
         </div>
         <div key={step} className="mt-8 animate-rise rounded-[1.75rem] bg-white p-6 shadow-soft sm:p-10">
-          <p className={cn("text-xs font-bold uppercase tracking-[0.16em]", senior ? "text-terra-500" : "text-sage-600")}>{steps[step]}</p>
+          <p className={cn("text-xs font-semibold", senior ? "text-terra-500" : "text-sage-600")}>{steps[step]}</p>
 
           {step === 0 && (
             <div className="mt-2 space-y-6">

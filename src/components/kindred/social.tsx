@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
 import {
-  CalendarClock, CalendarPlus, Check, Clock, Flag, Heart, Lightbulb, MessageCircle, Phone, RefreshCw, Repeat, Sparkles, Video, X, Ban,
+  CalendarClock, CalendarPlus, Check, Clock, Flag, Heart, Lightbulb, MessageCircle, Phone, RefreshCw, Repeat, Video, X, Ban,
 } from "lucide-react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
@@ -95,7 +95,7 @@ export function MatchCard({ s, big }: { s: Suggestion; big?: boolean }) {
             </div>
             <div className="text-right">
               <p className={cn("font-display font-semibold text-sage-600 tabular-nums", big ? "text-3xl" : "text-2xl")}>{pct(s.score)}</p>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-ink-500">match</p>
+              <p className="text-[11px] font-semibold text-ink-500">match</p>
             </div>
           </div>
           {p.bio && <p className="mt-2 line-clamp-2 text-sm text-ink-600">{p.bio}</p>}
@@ -108,7 +108,7 @@ export function MatchCard({ s, big }: { s: Suggestion; big?: boolean }) {
       </div>
       <div className="mt-4 rounded-2xl bg-sage-50 p-3.5">
         <p className={cn("flex gap-2 text-sage-800", big ? "text-base" : "text-sm")}>
-          <Sparkles className="mt-0.5 size-4 shrink-0" />
+          <Lightbulb className="mt-0.5 size-4 shrink-0" />
           <span>{s.explanation}</span>
         </p>
       </div>
@@ -265,7 +265,7 @@ export function ConversationStarters({ relationshipId, big }: { relationshipId: 
   if (!data?.starters.length) return null;
   return (
     <div className="mt-4 rounded-2xl bg-gold-100/50 p-4">
-      <p className={cn("mb-2 flex items-center gap-1.5 font-bold text-gold-500", big ? "text-sm" : "text-xs uppercase tracking-wider")}><Lightbulb className="size-4" /> Something to talk about</p>
+      <p className={cn("mb-2 flex items-center gap-1.5 font-semibold text-gold-500", big ? "text-base" : "text-sm")}><Lightbulb className="size-4" /> Something to talk about</p>
       <ul className="space-y-1.5">
         {data.starters.map((s, i) => (
           <li key={i} className={cn("text-ink-700", big ? "text-lg leading-snug" : "text-sm")}>

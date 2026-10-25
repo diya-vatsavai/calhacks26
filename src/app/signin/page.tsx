@@ -85,7 +85,6 @@ function SignInInner() {
           </p>
         </div>
         <p className="flex items-center gap-2 text-sm text-ink-600"><ShieldCheck className="size-4" /> Calls are never recorded unless both of you say yes.</p>
-        <div className="pointer-events-none absolute -bottom-20 -right-20 size-80 rounded-full bg-white/40 blur-2xl" />
       </div>
 
       <div className="flex flex-col justify-center px-6 py-12 sm:px-16">
@@ -148,16 +147,16 @@ function SignInInner() {
             </button>
           </p>
 
-          <div className="mt-10 rounded-2xl border border-dashed border-gold-400 bg-gold-100/40 p-4">
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-gold-500">Demo accounts</p>
-            <p className="mt-1 text-xs text-ink-600">Seeded for the hackathon demo. Password <code className="rounded bg-white px-1">kindred-demo-2026</code>. Tip: open the second person in a different browser origin (e.g. 127.0.0.1 vs localhost) to test calls on one machine.</p>
+          <div className="mt-10 rounded-[1.25rem] bg-cream-100 p-4">
+            <p className="text-sm font-semibold text-ink-800">Demo accounts</p>
+            <p className="mt-1 text-xs text-ink-600">Password <code className="rounded bg-white px-1">kindred-demo-2026</code>. Tip: open the second person in a different browser origin (e.g. 127.0.0.1 vs localhost) to test calls on one machine.</p>
             <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
               {DEMO.map((d) => (
                 <button
                   key={d.email}
                   type="button"
                   onClick={() => { setMode("signIn"); setEmail(d.email); setPassword("kindred-demo-2026"); setError(null); }}
-                  className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-left text-sm shadow-soft hover:bg-cream-50"
+                  className="flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-left text-sm hover:bg-cream-50"
                 >
                   <span className="text-lg">{d.emoji}</span>
                   <span><span className="font-semibold">{d.label}</span><span className="block text-[11px] text-ink-500">{d.who}</span></span>

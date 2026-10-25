@@ -17,7 +17,7 @@ export default function Progress() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-terra-500">Learning progress</p>
+          <p className="text-xs font-semibold text-terra-500">Learning progress</p>
           <h1 className="mt-1 font-display text-4xl font-semibold tracking-tight">How you&apos;re growing</h1>
         </div>
         {p.hasDemoData && <DemoTag>Includes seeded demo history</DemoTag>}
@@ -96,7 +96,7 @@ export default function Progress() {
             <div className="flex flex-wrap gap-1.5">
               {(viewer?.profile?.learningGoals ?? []).map((g) => <span key={g} className="rounded-full bg-sage-100 px-3 py-1 text-sm font-semibold capitalize text-sage-800">{g}</span>)}
             </div>
-            <p className="pt-2 text-xs font-bold uppercase tracking-wider text-ink-500">Patterns we keep noticing</p>
+            <p className="pt-2 text-xs font-semibold text-ink-500">Patterns we keep noticing</p>
             {p.recurringWeaknesses.length ? (
               p.recurringWeaknesses.map((w) => (
                 <div key={w.tag} className="flex items-center gap-2">

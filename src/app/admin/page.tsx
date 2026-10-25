@@ -37,7 +37,7 @@ export default function AdminOverview() {
           <div className="mb-6 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
             {o.funnel.map((f, i) => (
               <div key={f.stage} className="relative rounded-xl p-3 text-white" style={{ background: FUNNEL_COLORS[i] }}>
-                <p className="text-[11px] font-bold uppercase tracking-wider opacity-90">{i + 1}. {f.stage}</p>
+                <p className="text-[11px] font-semiboldr opacity-90">{i + 1}. {f.stage}</p>
                 <p className="font-display text-3xl font-semibold">{f.count}</p>
                 <p className="text-[11px] opacity-80">{i > 0 && o.funnel[0].count ? `${Math.round((f.count / o.funnel[0].count) * 100)}% of onboarded` : "people"}</p>
               </div>

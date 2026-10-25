@@ -351,7 +351,7 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
         </div>
         {showPrompts && (
           <aside className="hidden w-72 shrink-0 flex-col rounded-[1.75rem] bg-white/[0.06] p-5 md:flex">
-            <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-gold-300"><Lightbulb className="size-4" /> Conversation ideas</p>
+            <p className="flex items-center gap-2 text-sm font-semibold text-gold-300"><Lightbulb className="size-4" /> Conversation ideas</p>
             <ul className="mt-4 space-y-3">
               {prompts.map((p) => <li key={p} className={cn("rounded-2xl bg-white/[0.06] p-3 text-cream-100", senior ? "text-lg" : "text-sm")}>{p}</li>)}
             </ul>
@@ -384,7 +384,7 @@ function EndScreen({ callId, senior, buddyName, elapsed }: { callId: Id<"schedul
   return (
     <div className={cn("flex min-h-screen items-center justify-center bg-cream-100 px-6 py-12", senior && "senior")}>
       <div className="w-full max-w-xl rounded-[2rem] bg-white p-8 shadow-lift">
-        <p className="text-sm font-bold uppercase tracking-[0.14em] text-terra-500">Call ended · {Math.max(1, Math.round(dur / 60))} min</p>
+        <p className="text-sm font-semibold text-terra-500">Call ended · {Math.max(1, Math.round(dur / 60))} min</p>
         <h1 className={cn("mt-2 font-display font-semibold", senior ? "text-4xl" : "text-3xl")}>How was your conversation with {firstName(buddyName)}?</h1>
         <div className="mt-6 flex gap-2" role="radiogroup" aria-label="Rating">
           {[1, 2, 3, 4, 5].map((n) => (
