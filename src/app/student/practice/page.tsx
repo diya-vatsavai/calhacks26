@@ -44,7 +44,7 @@ function Coach({ children, speaking, onPlay, label = "Coach" }: { children: Reac
       <div className={cn("flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-[#111d3a]/10 bg-[#d6ecff] text-[#3f87d2]", speaking && "animate-pulse-ring")}>
         <Sparkles className="size-5" />
       </div>
-      <div className="max-w-[85%] rounded-[1.25rem] rounded-tl-md border-2 border-[#111d3a]/10 bg-white px-4 py-3">
+      <div className="max-w-[85%] rounded-[1.25rem] rounded-tl-md border-2 border-[#111d3a]/10 bg-[#f1f3f6] px-4 py-3">
         <div className="mb-1 flex items-center gap-2 text-xs font-bold text-[#314267]">
           {label}
           {onPlay && (
@@ -65,6 +65,20 @@ function nextPrompt(reply: string) {
 }
 
 const PAUSE_SECONDS = 6;
+
+/** A coach reply with the part the student should answer in bold. */
+function CoachReply({ text }: { text: string }) {
+  const q = nextPrompt(text);
+  const at = q ? text.lastIndexOf(q) : -1;
+  if (at < 0) return <p>{text}</p>;
+  return (
+    <p>
+      {text.slice(0, at)}
+      <b className="text-[#111d3a]">{q}</b>
+      {text.slice(at + q.length)}
+    </p>
+  );
+}
 
 
 function Studio() {
@@ -95,7 +109,8 @@ function Studio() {
   // can read their score and feedback before the next question is shown and spoken.
   const [revealed, setRevealed] = useState(0);
   const [countdown, setCountdown] = useState<number | null>(null);
-  const pending = useRef<{ reply: string; count: number } | null>(null);
+  const [keepGoing, setKeepGoing] = useState(false);
+  const pending = useRef<{ reply: string; count: number; done: boolean } | null>(null);
   const loadedSession = useRef<string | null>(null);
 
   // Opening an existing session shows its whole history at once.
@@ -112,6 +127,7 @@ function Studio() {
     if (!p) return;
     setRevealed(p.count);
     void speaker.speak(p.reply);
+    if (p.done) toast.success("Exercise complete! 🎉");
   }, [speaker]);
 
   useEffect(() => {
@@ -142,7 +158,8 @@ function Studio() {
     if (!exercise || spokenIntro.current === exercise._id) return;
     spokenIntro.current = exercise._id;
     const examples = exercise.targetPhrase ? ` Listen: ${exercise.targetPhrase}` : exercise.examplePhrases[0] ? ` For example: ${exercise.examplePhrases[0]}` : "";
-    void speaker.speak(`${exercise.coachIntro}${examples} ${exercise.targetPhrase ? "Now say it out loud." : exercise.instructions}`);
+    const opener = exercise.coachIntro.match(/^[^.!?]+[.!?]/)?.[0] ?? "";
+    void speaker.speak(exercise.targetPhrase ? `${opener}${examples} Now say it out loud.` : `${opener} ${exercise.instructions}${examples}`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exercise?._id]);
 
@@ -157,6 +174,7 @@ function Studio() {
         pending.current = null;
         setCountdown(null);
         setRevealed(0);
+        setKeepGoing(false);
         setSessionId(r.sessionId);
         setRetrieval(r.retrieval);
         setTyping(false);
@@ -179,9 +197,8 @@ function Studio() {
       setPhase("idle");
       setTyped("");
       // Show the score + feedback first; the coach's next question follows after a short pause.
-      pending.current = { reply: r.coachReply, count: attempts.length + 1 };
+      pending.current = { reply: r.coachReply, count: attempts.length + 1, done: Boolean(r.done) };
       setCountdown(PAUSE_SECONDS);
-      if (r.done) toast.success("Exercise complete! 🎉");
     } catch (e) {
       setPhase("idle");
       if (e instanceof ApiError && e.data.needsTyping) {
@@ -209,7 +226,8 @@ function Studio() {
     if (!rec.recording && phase === "recording") setPhase("idle");
   }, [rec.recording, phase]);
 
-  const done = Boolean(session?.completedAt);
+  // Only show "completed" once the coach's final message is revealed, and never if the student chose to continue.
+  const done = Boolean(session?.completedAt) && countdown === null && revealed >= attempts.length && !keepGoing;
 
   if (!sessionId || !exercise) {
     return (
@@ -262,13 +280,6 @@ function Studio() {
     );
   }
 
-  // What the student should say right now — always spelled out next to the mic.
-  const lastRevealed = revealed > 0 ? attempts[revealed - 1] : undefined;
-  const yourTurn: { label: string; text: string } = exercise.targetPhrase
-    ? { label: lastRevealed ? "Say it again, clearly" : "Read this sentence out loud", text: `“${exercise.targetPhrase}”` }
-    : lastRevealed
-      ? { label: "Answer the coach", text: nextPrompt(lastRevealed.coachReply) }
-      : { label: "Your task — say this out loud", text: exercise.instructions };
   const waiting = countdown !== null;
 
   return (
@@ -287,9 +298,8 @@ function Studio() {
         </div>
 
         <div className="flex-1 space-y-4 rounded-[1.5rem] border-2 border-[#111d3a]/10 bg-[#e5f1fe] p-4 sm:p-6">
-          <Coach speaking={speaker.speaking && revealed === 0} onPlay={() => speaker.speak(exercise.coachIntro)}>
-            <p>{exercise.coachIntro}</p>
-            {exercise.scenario && <p className="mt-2 rounded-xl bg-[#fff7d1] p-3 text-sm"><MessagesSquare className="mr-1 inline size-4" /> {exercise.scenario}</p>}
+          <Coach speaking={speaker.speaking && revealed === 0} onPlay={() => speaker.speak(exercise.targetPhrase ? "Read this sentence out loud." : exercise.instructions)}>
+            <p className="font-bold">{exercise.targetPhrase ? "Read this sentence out loud:" : exercise.instructions}</p>
           </Coach>
           {exercise.targetPhrase ? (
             <Coach label="Say this" onPlay={() => speaker.speak(exercise.targetPhrase!, { speed: 0.9 })}>
@@ -339,7 +349,7 @@ function Studio() {
                   </div>
                 </div>
               </div>
-              {i < revealed && <Coach speaking={speaker.speaking && i === revealed - 1} onPlay={() => speaker.speak(a.coachReply)}>{a.coachReply}</Coach>}
+              {i < revealed && <Coach speaking={speaker.speaking && i === revealed - 1} onPlay={() => speaker.speak(a.coachReply)}><CoachReply text={a.coachReply} /></Coach>}
             </div>
           ))}
 
@@ -352,24 +362,22 @@ function Studio() {
         <div ref={controlsRef} className="sticky bottom-20 mt-4 rounded-[1.5rem] border-2 border-[#111d3a]/10 bg-white p-4 shadow-lift lg:bottom-4">
           {waiting ? (
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="font-semibold text-[#111d3a]">Take a moment to read your feedback — next question in {countdown}…</p>
+              <p className="font-semibold text-[#111d3a]">
+                Take a moment to read your feedback — {pending.current?.done ? "your coach's wrap-up" : "next question"} in {countdown}…
+              </p>
               <Button onClick={revealNext} className="bg-[#3f87d2] text-white hover:bg-[#2e72bb]">Continue now <ArrowRight /></Button>
             </div>
           ) : done ? (
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="flex items-center gap-2 font-semibold text-[#245993]"><Check className="size-5" /> Nicely done! You completed this exercise.</p>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
+                <Button variant="ghost" onClick={() => setKeepGoing(true)}>Keep practicing this</Button>
                 <Button variant="outline" onClick={() => start(exercise.type)}><RefreshCw /> Another {exercise.type}</Button>
                 <Button onClick={() => start(undefined)} className="bg-[#3f87d2] text-white hover:bg-[#2e72bb]">Next challenge <ArrowRight /></Button>
               </div>
             </div>
           ) : (
             <>
-              {/* Exactly what to say — never ambiguous */}
-              <div className="mb-4 rounded-2xl border-2 border-[#111d3a] bg-[#fff7d1] px-4 py-3">
-                <p className="text-xs font-bold uppercase tracking-wider text-[#314267]">{yourTurn.label}</p>
-                <p className="mt-0.5 text-lg font-bold leading-snug text-[#111d3a]">{yourTurn.text}</p>
-              </div>
               {typing ? (
                 <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); if (!typed.trim()) return; const f = new FormData(); f.set("typed", typed); void submit(f); }}>
                   <Input value={typed} onChange={(e) => setTyped(e.target.value)} placeholder="Type your answer…" autoFocus />

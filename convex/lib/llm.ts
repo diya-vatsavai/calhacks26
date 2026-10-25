@@ -105,7 +105,7 @@ export const GeneratedExercise = z.object({
   title: z.string(),
   focus: z.string().describe("the skill targeted, e.g. 'past-tense verbs'"),
   whyThis: z.string().describe("one sentence linking to the retrieved history, e.g. 'In your call with Eleanor you said...'"),
-  coachIntro: z.string().describe("what the coach says aloud to start; 2-3 friendly spoken sentences, no markdown"),
+  coachIntro: z.string().describe("ONE short friendly spoken greeting sentence. Do not describe a scenario or the task here — the task goes in instructions."),
   instructions: z
     .string()
     .describe(
@@ -147,7 +147,9 @@ export const AttemptEvaluation = z.object({
     .describe(
       "what the coach says aloud next: brief encouragement + one tip, then END with exactly one clear question or instruction telling the learner what to say next (e.g. 'Now tell me what you ate there.'). Spoken English, max 3 sentences.",
     ),
-  done: z.boolean().describe("true when the learner has met the exercise goal"),
+  done: z
+    .boolean()
+    .describe("true only when the learner has met the exercise goal. If true, coachReply congratulates them and must NOT ask another question or give another task."),
 });
 
 export async function evaluateAttempt(input: {
