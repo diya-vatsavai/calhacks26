@@ -7,7 +7,7 @@ import { api } from "../../../../../convex/_generated/api";
 import type { Id } from "../../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PageLoader, ScoreRing, SourceTag } from "@/components/kindred/basics";
+import { PageLoader, Pip, ScoreRing, SourceTag } from "@/components/kindred/basics";
 import { pct, relativeDay } from "@/lib/utils";
 
 export default function FeedbackDetail({ params }: { params: Promise<{ id: string }> }) {
@@ -17,12 +17,13 @@ export default function FeedbackDetail({ params }: { params: Promise<{ id: strin
   return (
     <div className="space-y-6">
       <Link href="/student/feedback" className="inline-flex items-center gap-1 text-sm font-semibold text-ink-600 hover:text-ink-900"><ArrowLeft className="size-4" /> All feedback</Link>
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
+      <div className="relative flex flex-wrap items-center justify-between gap-4 overflow-hidden rounded-[2rem] border-2 border-[#111d3a]/10 bg-[#d6ecff] px-6 py-7 sm:px-10">
+        <div className="relative z-10">
           <p className="text-sm text-ink-500">{relativeDay(i.createdAt)} · conversation with {i.buddyName}</p>
-          <h1 className="mt-1 font-display text-4xl font-semibold tracking-tight">{i.topics.join(" · ")}</h1>
-          <p className="mt-2 max-w-2xl text-ink-700">{i.summary}</p>
+          <h1 className="mt-1 text-5xl font-bold tracking-tight text-[#111d3a]">{i.topics.join(" · ")}</h1>
+          <p className="mt-2 max-w-2xl text-lg text-[#314267]">{i.summary}</p>
         </div>
+        <Pip size="lg" className="hidden sm:block" />
         <SourceTag source={i.analysisSource} />
       </div>
 

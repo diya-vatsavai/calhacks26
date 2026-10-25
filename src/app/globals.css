@@ -68,6 +68,24 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+.student {
+  --student-navy: #111d3a;
+  --student-blue: #3f87d2;
+  --student-sky: #e5f1fe;
+  --student-green: #5fc088;
+  --student-yellow: #fff7d1;
+  font-family: var(--font-sans);
+  color: var(--student-navy);
+}
+
+.student h1,
+.student h2,
+.student h3,
+.student .font-display {
+  font-family: var(--font-readable);
+  letter-spacing: -0.02em;
+}
+
 /* paper texture for scrapbook surfaces */
 .paper {
   background-color: var(--color-cream-50);
