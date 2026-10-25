@@ -118,7 +118,7 @@ export const generate = action({
       whyThis: ex.whyThis,
       coachIntro: ex.coachIntro,
       instructions: ex.instructions,
-      examplePhrases: ex.examplePhrases.slice(0, 3),
+      examplePhrases: ex.examplePhrases.slice(0, 2),
       targetPhrase: ex.targetPhrase || undefined,
       scenario: ex.scenario || undefined,
       retrievedContext: retrieved.slice(0, 5).map((r) => ({ ...r, text: r.text.slice(0, 400) })),
