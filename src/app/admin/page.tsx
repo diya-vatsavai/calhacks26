@@ -16,7 +16,7 @@ export default function AdminOverview() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-display text-3xl font-semibold">Kindred operations</h1>
+        <h1 className="text-5xl font-bold text-[#111d3a]">Kindred operations</h1>
         <p className="text-sm text-ink-600">Live from Convex. Aggregate data only — administrators cannot read transcripts, feedback or memories.</p>
       </div>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">

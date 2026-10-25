@@ -2,12 +2,16 @@
 import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { BuddyCard, IncomingRequests, MatchList } from "@/components/kindred/social";
+import { Pip } from "@/components/kindred/basics";
 
 export default function SeniorFriends() {
   const buddies = useQuery(api.matching.myBuddies);
   return (
     <div className="space-y-12">
-      <h1 className="font-display text-5xl font-semibold tracking-tight">My Friends</h1>
+      <div className="flex items-center justify-between rounded-[2rem] border-2 border-[#111d3a]/10 bg-[#d6ecff] px-6 py-7 sm:px-10">
+        <h1 className="text-5xl font-bold tracking-tight text-[#111d3a]">My Friends</h1>
+        <Pip size="lg" className="hidden sm:block" />
+      </div>
       <IncomingRequests big />
       {!!buddies?.length && (
         <section>

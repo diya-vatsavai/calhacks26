@@ -8,7 +8,7 @@ import { api } from "../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Chip, Logo, PageLoader, PersonAvatar, Spinner } from "@/components/kindred/basics";
+import { Chip, Logo, PageLoader, PersonAvatar, Pip, Spinner } from "@/components/kindred/basics";
 import { AvailabilityPicker, cellsToSlots, COMMON_TIMEZONES } from "@/components/kindred/availability";
 import { homeFor, useViewer } from "@/components/kindred/shells";
 import { cn } from "@/lib/utils";
@@ -108,12 +108,16 @@ export default function Onboarding() {
 
   const big = senior;
   return (
-    <div className={cn("min-h-screen bg-cream-100", senior && "senior")}>
+    <div className={cn("student min-h-screen bg-[#e5f1fe]", senior && "senior")}>
       <header className="mx-auto flex max-w-3xl items-center justify-between px-6 py-6">
-        <Logo />
+        <Logo className="text-[#111d3a]" />
         <span className="text-sm text-ink-500">Step {step + 1} of {steps.length}</span>
       </header>
       <div className="mx-auto max-w-3xl px-6">
+        <div className="mb-5 flex items-center gap-3 rounded-2xl bg-[#fff7d1] px-4 py-3 text-[#111d3a]">
+          <Pip size="sm" className="size-12" />
+          <span className="font-bold">Pip will help you make Kindred feel like home.</span>
+        </div>
         <div className="flex gap-1.5" aria-hidden>
           {steps.map((s, i) => (
             <div key={s} className={cn("h-1.5 flex-1 rounded-full transition-colors", i <= step ? (senior ? "bg-terra-400" : "bg-sage-500") : "bg-ink-900/10")} />

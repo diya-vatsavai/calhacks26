@@ -16,7 +16,7 @@ export default function MatchingWorkspace() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-display text-3xl font-semibold">Matching workspace</h1>
+        <h1 className="text-5xl font-bold text-[#111d3a]">Matching workspace</h1>
         <p className="text-sm text-ink-600">Compatibility = 50% Moss semantic interest similarity + 25% availability overlap + 15% topic overlap + 10% pace fit.</p>
       </div>
       <Card>

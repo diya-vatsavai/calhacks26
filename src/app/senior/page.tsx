@@ -4,7 +4,7 @@ import { useQuery } from "convex/react";
 import { BookHeart, CalendarPlus, Heart, PenLine, Phone, Users } from "lucide-react";
 import { api } from "../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
-import { EmptyState, PersonAvatar, SourceTag } from "@/components/kindred/basics";
+import { EmptyState, PersonAvatar, Pip, SourceTag } from "@/components/kindred/basics";
 import { useViewer } from "@/components/kindred/shells";
 import { IncomingRequests, UpcomingCalls, useCallNow } from "@/components/kindred/social";
 import { firstName, fmtDuration, relativeDay } from "@/lib/utils";
@@ -35,9 +35,14 @@ export default function SeniorHome() {
 
   return (
     <div className="space-y-12">
-      <section>
-        <p className="text-xl text-ink-600">{greet},</p>
-        <h1 className="font-display text-5xl font-semibold tracking-tight sm:text-6xl">{firstName(viewer.name)}</h1>
+      <section className="relative overflow-hidden rounded-[2rem] border-2 border-[#111d3a]/10 bg-[#fff7d1] px-6 py-7 sm:px-10">
+        <div className="relative z-10 flex items-center justify-between gap-6">
+          <div>
+            <p className="text-xl text-[#314267]">{greet},</p>
+            <h1 className="text-6xl font-bold tracking-tight text-[#111d3a] sm:text-7xl">{firstName(viewer.name)}</h1>
+          </div>
+          <Pip size="lg" className="hidden sm:block" />
+        </div>
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2" aria-label="Main actions">
