@@ -1,0 +1,37 @@
+# Render Blueprint for Kindred — https://render.com/docs/blueprint-spec
+# Convex (database, auth, realtime, pipeline) is hosted separately on Convex Cloud.
+# This service runs the Next.js app, including the Moss retrieval layer, which keeps its
+# embedding model and loaded index in memory — so it needs an always-on (non-sleeping) instance.
+services:
+  - type: web
+    name: kindred
+    runtime: node
+    plan: starter            # always on; the free plan sleeps and would reload Moss on every wake-up
+    region: oregon
+    branch: ver-2
+    autoDeploy: true
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: MOSS_INDEX_NAME
+        value: kindred-prod
+      # Values below are prompted for when you create the Blueprint (see docs/DEPLOY.md).
+      - key: NEXT_PUBLIC_CONVEX_URL
+        sync: false
+      - key: NEXT_PUBLIC_CONVEX_SITE_URL
+        sync: false
+      - key: SITE_URL
+        sync: false
+      - key: KINDRED_SERVER_SECRET
+        sync: false
+      - key: CARTESIA_API_KEY
+        sync: false
+      - key: MOSS_PROJECT_ID
+        sync: false
+      - key: MOSS_PROJECT_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false

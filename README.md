@@ -123,4 +123,4 @@ Keep **Admin → Sponsor integrations** open in a third window. Every Convex, Ca
 - **No medical claims.** The Memory Book is framed as reflection and connection. Kindred makes no diagnoses or cognitive scores.
 - Credentials stay server-side. The integration monitor strips anything key-like from log details.
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the technical design.
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the technical design, and [docs/DEPLOY.md](docs/DEPLOY.md) to host Kindred permanently (Render + Convex Cloud).
