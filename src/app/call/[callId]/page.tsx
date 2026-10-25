@@ -72,6 +72,9 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
   const [camOn, setCamOn] = useState(true);
   const [hasVideo, setHasVideo] = useState(false);
   const [remoteVideo, setRemoteVideo] = useState(false);
+  // Real width/height ratio of each camera (phones are tall, laptops are wide) — used to show video uncropped.
+  const [remoteAspect, setRemoteAspect] = useState<number | null>(null);
+  const [localAspect, setLocalAspect] = useState<number | null>(null);
   const [consent, setConsent] = useState(false);
   const [recording, setRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
@@ -127,7 +130,7 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
   // ---- media ----
   const startMedia = useCallback(async (wantVideo: boolean) => {
     try {
-      const s = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true }, video: wantVideo ? { width: 1280, height: 720 } : false });
+      const s = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true }, video: wantVideo ? { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } } : false });
       localStream.current = s;
       setHasVideo(s.getVideoTracks().length > 0);
     } catch {
@@ -170,7 +173,7 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
       conn.ontrack = (e) => {
         const [stream] = e.streams;
         if (remoteVideoEl.current) remoteVideoEl.current.srcObject = stream;
-        if (remoteAudioEl.current) remoteAudioEl.current.srcObject = stream;
+            if (remoteAudioEl.current) remoteAudioEl.current.srcObject = stream;
         setRemoteVideo(stream.getVideoTracks().length > 0);
       };
       conn.onconnectionstatechange = () => {
@@ -387,7 +390,7 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
   }
 
   return (
-    <div className={cn("flex min-h-screen flex-col bg-[#111d3a] text-cream-50", senior && "senior")}>
+    <div className={cn("flex min-h-screen flex-col bg-[#111d3a] text-cream-50 md:h-dvh md:min-h-0 md:overflow-hidden", senior && "senior")}>
       <header className="flex flex-wrap items-center gap-3 px-5 py-4">
         <PersonAvatar avatar={buddy?.avatar} color={buddy?.avatarColor} name={buddy?.name} size="sm" />
         <div className="flex-1">
@@ -404,9 +407,18 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
         </div>
       </header>
 
-      <div className="relative flex flex-1 flex-col gap-4 px-5 pb-4 md:flex-row">
-        <div className="relative flex min-h-[34vh] flex-1 items-center justify-center overflow-hidden rounded-[1.75rem] bg-black/40">
-          <video ref={remoteVideoEl} autoPlay playsInline muted className={cn("size-full object-cover", (!remoteVideo || !other?.camOn) && "hidden")} />
+      <div className="relative flex flex-1 flex-col gap-4 px-5 pb-4 md:min-h-0 md:flex-row">
+        <div className="relative flex min-h-[45vh] flex-1 items-center justify-center overflow-hidden rounded-[1.75rem] bg-black/40">
+          <video
+            ref={remoteVideoEl}
+            autoPlay
+            playsInline
+            muted
+            onLoadedMetadata={(e) => setRemoteAspect(e.currentTarget.videoWidth / Math.max(1, e.currentTarget.videoHeight))}
+            onResize={(e) => setRemoteAspect(e.currentTarget.videoWidth / Math.max(1, e.currentTarget.videoHeight))}
+            className={cn("absolute inset-0 size-full object-contain", (!remoteVideo || !other?.camOn) && "hidden")}
+            data-shape={remoteAspect ? (remoteAspect < 1 ? "portrait" : "landscape") : undefined}
+          />
           <audio ref={remoteAudioEl} autoPlay />
           {(!remoteVideo || !other?.camOn) && (
             <div className="flex flex-col items-center gap-4">
@@ -426,7 +438,20 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
             </div>
           )}
           {hasVideo && (
-            <video ref={localVideoEl} autoPlay playsInline muted className={cn("absolute bottom-4 right-4 aspect-video w-40 rounded-2xl border-2 border-white/20 object-cover shadow-lift sm:w-56", !camOn && "opacity-0")} style={{ transform: "scaleX(-1)" }} />
+            <video
+              ref={localVideoEl}
+              autoPlay
+              playsInline
+              muted
+              onLoadedMetadata={(e) => setLocalAspect(e.currentTarget.videoWidth / Math.max(1, e.currentTarget.videoHeight))}
+              onResize={(e) => setLocalAspect(e.currentTarget.videoWidth / Math.max(1, e.currentTarget.videoHeight))}
+              className={cn(
+                "absolute bottom-3 right-3 z-10 rounded-2xl sm:bottom-4 sm:right-4 border-2 border-white/20 bg-black object-cover shadow-lift",
+                localAspect !== null && localAspect < 1 ? "w-[4.5rem] sm:w-32" : "w-32 sm:w-56",
+                !camOn && "opacity-0",
+              )}
+              style={{ transform: "scaleX(-1)", aspectRatio: localAspect ?? 16 / 9 }}
+            />
           )}
           {captionsVisible && (
             <CaptionOverlay
@@ -437,6 +462,7 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
           )}
         </div>
         {!isSenior && conversationId && (
+          <div className="shrink-0 md:min-h-0 md:overflow-y-auto">
           <LambPanel
             lamb={lamb}
             buddyName={buddy?.name ?? ""}
@@ -446,6 +472,7 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
             onToggleCaptions={toggleCaptions}
             captionsStatus={captions.status}
           />
+          </div>
         )}
       </div>
 
