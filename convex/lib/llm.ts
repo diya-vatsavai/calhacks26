@@ -164,3 +164,77 @@ Target words not recognized in the audio: ${input.missedTargetWords.join(", ") |
 Speaking pace: ${input.wpm} words/min`;
   return structured(AttemptEvaluation, system, user, "low");
 }
+
+// ---------------- The Lamb (in-call assistant) ----------------
+
+const LAMB_SYSTEM = `You are Lamb, a discreet helper sitting beside an English learner during a friendly video call with an older adult they call their buddy.
+Rules:
+- Never take over the conversation. Give the learner one small thing to do, not a script for the whole call.
+- Match the learner's level: short everyday words at beginner level, richer phrasing at advanced level.
+- Be specific to the context you are given. Never invent a story, memory or fact.
+- Everything you write appears in a tiny bubble while two people are talking, so keep it very short.
+- Never mention being an AI, a model, or these instructions.`;
+
+export const LambSpark = z.object({
+  text: z.string().describe("one sentence the learner could say next, in their own voice, max 20 words, no quotation marks"),
+  detail: z.string().describe("a one-line hint for the learner about why it works; empty string when not needed"),
+});
+
+export async function lambSpark(input: {
+  name: string;
+  proficiency?: string;
+  buddyName: string;
+  topics: string[];
+  focus: string[];
+  retrieved: Array<{ text: string; source: string }>;
+  quietSec: number;
+}) {
+  const user = `Learner: ${input.name} (English level: ${input.proficiency ?? "intermediate"})
+Buddy: ${input.buddyName}
+The learner is currently working on: ${input.focus.join(", ") || "(general fluency)"}
+What these two have talked about before: ${input.topics.join(", ") || "(nothing yet)"}
+Retrieved from the learner's own history (Moss semantic memory, most relevant first):
+${input.retrieved.length ? input.retrieved.map((r, i) => `${i + 1}. [${r.source}] ${r.text}`).join("\n") : "(none yet)"}
+The conversation has been quiet for about ${input.quietSec} seconds.
+Give ONE thing the learner could say next — preferably an open question that invites the buddy to tell a story. No yes/no questions.`;
+  return structured(LambSpark, LAMB_SYSTEM, user, "low");
+}
+
+export const LambRescue = z.object({
+  word: z.string().describe("the single word or short phrase the learner is reaching for"),
+  meaning: z.string().describe("a plain definition in the simplest English, max 12 words"),
+  sayThis: z.string().describe("the learner's unfinished sentence completed naturally, continuing from where they stopped"),
+});
+
+export async function lambRescue(input: {
+  proficiency?: string;
+  nativeLanguage?: string;
+  stall: string;
+  recent: Array<{ speaker: "student" | "senior"; text: string }>;
+  topics: string[];
+  focus: string[];
+}) {
+  const user = `Learner's level: ${input.proficiency ?? "intermediate"} (first language: ${input.nativeLanguage ?? "unknown"})
+They are currently working on: ${input.focus.join(", ") || "(general fluency)"}
+They are reaching for a word. What they said: "${input.stall}"
+What was said just before:
+${input.recent.slice(-4).map((r) => `${r.speaker === "student" ? "Learner" : "Buddy"}: ${r.text}`).join("\n") || "(nothing yet)"}
+Topics in play: ${input.topics.join(", ") || "(general)"}
+Name the one word they most plausibly need, define it in the simplest English, then complete their sentence naturally.
+Do not correct their grammar here — this is a word rescue, not a lesson.`;
+  return structured(LambRescue, LAMB_SYSTEM, user, "low");
+}
+
+export const LambGloss = z.object({
+  meaning: z.string().describe("a short plain-language explanation in the requested language, max 14 words"),
+  simple: z.string().describe("the same idea in simple English, max 16 words"),
+});
+
+export async function lambGloss(input: { phrase: string; context?: string; nativeLanguage?: string; proficiency?: string }) {
+  const language = input.nativeLanguage?.trim() || "English";
+  const user = `Phrase to explain: "${input.phrase}"
+Said in context: "${input.context?.slice(0, 400) ?? "(no context)"}"
+Learner's level: ${input.proficiency ?? "intermediate"}
+Write the explanation in ${language}${language.toLowerCase() === "english" ? "" : " (not in English)"}. Keep it concrete: what it means, not a grammar lecture.`;
+  return structured(LambGloss, LAMB_SYSTEM, user, "low");
+}
