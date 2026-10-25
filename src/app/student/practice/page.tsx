@@ -44,7 +44,7 @@ function Coach({ children, speaking, onPlay, label = "Coach" }: { children: Reac
       <div className={cn("flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-[#111d3a]/10 bg-[#d6ecff] text-[#3f87d2]", speaking && "animate-pulse-ring")}>
         <Sparkles className="size-5" />
       </div>
-      <div className="max-w-[85%] rounded-[1.25rem] rounded-tl-md border-2 border-[#111d3a]/10 bg-[#f1f3f6] px-4 py-3">
+      <div className="max-w-[85%] rounded-[1.25rem] rounded-tl-md border-2 border-[#111d3a]/10 bg-white px-4 py-3">
         <div className="mb-1 flex items-center gap-2 text-xs font-bold text-[#314267]">
           {label}
           {onPlay && (
@@ -297,7 +297,7 @@ function Studio() {
           <Button variant="ghost" size="sm" onClick={() => { speaker.stop(); pending.current = null; setCountdown(null); setSessionId(null); }}><X /> Close</Button>
         </div>
 
-        <div className="flex-1 space-y-4 rounded-[1.5rem] border-2 border-[#111d3a]/10 bg-[#e5f1fe] p-4 sm:p-6">
+        <div className="flex-1 space-y-4 rounded-[1.5rem] border-2 border-[#111d3a]/10 bg-[#eceef2] p-4 sm:p-6">
           <Coach speaking={speaker.speaking && revealed === 0} onPlay={() => speaker.speak(exercise.targetPhrase ? "Read this sentence out loud." : exercise.instructions)}>
             <p className="font-bold">{exercise.targetPhrase ? "Read this sentence out loud:" : exercise.instructions}</p>
           </Coach>
