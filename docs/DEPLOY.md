@@ -57,6 +57,24 @@ npx convex env set --prod SITE_URL https://<your-service>.onrender.com
 
 The first visit to **Find a buddy** builds the `kindred-prod` Moss index (~20 s, one time). After that, searches take a few milliseconds.
 
+## Admin access
+
+The admin dashboard is not a public demo account. Give it a private password (at least 12 characters) on each deployment, which also signs out any existing admin sessions:
+
+```bash
+npx convex run --prod seed:setAdminPassword '{"password":"<a long private password>"}'
+```
+
+To make fresh seeds use it automatically: `npx convex env set --prod ADMIN_PASSWORD '<same password>'`. Share it only with teammates who need the operations view.
+
+## Demo-day warm-up
+
+Run this ~10 minutes before demoing. It resets Maya & Eleanor, wakes the site, pre-loads every Moss search path, checks the call relay and sponsor configuration, and prints a go / no-go list:
+
+```bash
+npm run warmup -- --prod            # add --no-reset to keep the demo pair's state, --tts to warm the Sonic voice
+```
+
 ## Updating
 
 - **Frontend / API routes:** merge into `main` → Render auto-deploys.

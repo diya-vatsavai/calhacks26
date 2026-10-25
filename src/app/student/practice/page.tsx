@@ -349,7 +349,7 @@ function Studio() {
             <ul className="mt-3 space-y-2">
               {exercise.retrievedContext.slice(0, 3).map((c, i) => (
                 <li key={i} className="rounded-xl bg-cream-100 p-3 text-xs">
-                  <p className="font-semibold text-ink-700">{c.source} <span className="font-normal text-ink-400">· relevance {c.score.toFixed(2)}</span></p>
+                  <p className="font-semibold text-ink-700">{c.source} <span className="font-normal text-ink-400">· {c.score >= 0.35 ? "strong match" : "related"}</span></p>
                   <p className="mt-1 line-clamp-4 text-ink-600">{c.text}</p>
                 </li>
               ))}
