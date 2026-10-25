@@ -106,8 +106,12 @@ export const GeneratedExercise = z.object({
   focus: z.string().describe("the skill targeted, e.g. 'past-tense verbs'"),
   whyThis: z.string().describe("one sentence linking to the retrieved history, e.g. 'In your call with Eleanor you said...'"),
   coachIntro: z.string().describe("what the coach says aloud to start; 2-3 friendly spoken sentences, no markdown"),
-  instructions: z.string().describe("short on-screen instruction"),
-  examplePhrases: z.array(z.string()).describe("2-3 model sentences the coach will speak aloud"),
+  instructions: z
+    .string()
+    .describe(
+      "ONE sentence telling the learner exactly what to say out loud right now, starting with a verb and naming the expected length — e.g. 'Tell me about a trip you took last summer in 3–4 sentences, using past-tense verbs.' For pronunciation: 'Read the sentence below out loud.' Never vague ('practice past tense').",
+    ),
+  examplePhrases: z.array(z.string()).describe("1-2 short model sentences the coach will speak aloud (never more than 2)"),
   targetPhrase: z.string().describe("for pronunciation: the exact sentence to repeat; otherwise empty"),
   scenario: z.string().describe("for roleplay: the situation; otherwise empty"),
 });
@@ -123,7 +127,8 @@ export async function generateExercise(input: {
   const system = `You are Kindred's supportive English coach. Design ONE short spoken exercise (2-4 minutes) for an adult learner.
 Use the retrieved learning history to target a real, recurring weakness, and set it in one of their interests.
 If the history is empty, base it on their stated goals and say so in whyThis. Never invent past events that are not in the history.
-Everything in coachIntro and examplePhrases will be spoken aloud by a voice model: write natural spoken English, no lists or symbols.`;
+Everything in coachIntro and examplePhrases will be spoken aloud by a voice model: write natural spoken English, no lists or symbols.
+The learner must always know exactly what to say: "instructions" is the single, concrete task they answer out loud. Give at most 2 example phrases.`;
   const user = `Learner: ${input.name}, level ${input.proficiency ?? "intermediate"}
 Goals: ${input.goals.join(", ") || "fluency"}
 Interests: ${input.interests.join(", ")}
@@ -137,7 +142,11 @@ export const AttemptEvaluation = z.object({
   score: z.number().describe("0-100, generous for real effort"),
   feedback: z.string().describe("1-3 sentences on screen"),
   corrections: z.array(z.object({ heard: z.string(), better: z.string() })).describe("only for real errors in the transcript"),
-  coachReply: z.string().describe("what the coach says aloud next: encouragement + one tip, or the next role-play line. Spoken English, max 3 sentences."),
+  coachReply: z
+    .string()
+    .describe(
+      "what the coach says aloud next: brief encouragement + one tip, then END with exactly one clear question or instruction telling the learner what to say next (e.g. 'Now tell me what you ate there.'). Spoken English, max 3 sentences.",
+    ),
   done: z.boolean().describe("true when the learner has met the exercise goal"),
 });
 
