@@ -66,14 +66,15 @@ export async function POST(req: Request) {
       const first = c.profile.name.split(" ")[0];
       const myFirst = me.name.split(" ")[0];
       const strong = pairs.filter((p) => p.similarity >= (live ? 0.28 : 0.3)).slice(0, 2);
-      const parts = [];
-      if (strong.length)
-        parts.push(
-          strong.map((p) => `${myFirst}'s “${p.mine}” connects with ${first}'s “${p.theirs}”`).join(", and ") + ".",
-        );
-      if (c.overlapMinutes > 0) parts.push(`You share about ${Math.round(c.overlapMinutes / 60)} hours of free time each week, across time zones.`);
-      else parts.push("Your weekly availability doesn't overlap yet — you can still agree on a time.");
-      if (c.preferenceScore > 0.3) parts.push("You like talking about similar topics.");
+      // Neutral third person ("Maya loves …, and Eleanor loves …") so the same text reads correctly
+      // for both people and for admins; the UI turns the viewer's own name into "you" (personalize()).
+      const parts: string[] = [];
+      for (const p of strong) parts.push(`${myFirst} loves ${p.mine}, and ${first} loves ${p.theirs}.`);
+      const hours = Math.round(c.overlapMinutes / 60);
+      if (c.overlapMinutes > 0)
+        parts.push(`Their free time overlaps by about ${hours} ${hours === 1 ? "hour" : "hours"} a week, even across time zones.`);
+      else parts.push("Their free time doesn't overlap yet, but they can still agree on a time.");
+      if (c.preferenceScore > 0.3) parts.push("They also enjoy similar conversation topics.");
       return {
         candidateId: c.profile.userId as Id<"users">,
         score: Math.round(score * 1000) / 1000,

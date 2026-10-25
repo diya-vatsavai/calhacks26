@@ -23,16 +23,26 @@ type PublicProfile = { userId: Id<"users">; name: string; avatar: string; avatar
 // ---------------- Matching ----------------
 
 /**
- * Match reasoning is stored in neutral third person ("Maya's … connects with Eleanor's …") because
- * the same text is shown to both people. On someone's own screen, their name becomes "your".
+ * Match reasoning is stored in neutral third person ("Maya loves …, and Eleanor loves …. Their free
+ * time overlaps …") because the same text is shown to both people and to admins. On someone's own
+ * screen it's rewritten to second person: "You love …, and Eleanor loves …. Your free time overlaps …".
  */
 export function personalize(text: string, viewerName?: string | null) {
   const me = firstName(viewerName ?? "");
   if (!me) return text;
   const name = me.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return text
-    .replace(new RegExp(`(^|[.!?]\\s+)${name}'s\\b`, "g"), (_m, lead: string) => `${lead}Your`)
-    .replace(new RegExp(`\\b${name}'s\\b`, "g"), "your");
+  return (
+    text
+      // Current wording
+      .replace(new RegExp(`(^|[.!?]\\s+)${name} loves\\b`, "g"), (_m, lead: string) => `${lead}You love`)
+      .replace(new RegExp(`\\b${name} loves\\b`, "g"), "you love")
+      .replace(/\bTheir free time overlaps\b/g, "Your free time overlaps")
+      .replace(/\bTheir free time doesn't overlap yet, but they can\b/g, "Your free time doesn't overlap yet, but you can")
+      .replace(/\bThey also enjoy\b/g, "You also both enjoy")
+      // Older stored wording (requests made before this change)
+      .replace(new RegExp(`(^|[.!?]\\s+)${name}'s\\b`, "g"), (_m, lead: string) => `${lead}Your`)
+      .replace(new RegExp(`\\b${name}'s\\b`, "g"), "your")
+  );
 }
 
 function useViewerName() {
