@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
 import {
-  CalendarClock, CalendarPlus, Check, Clock, Flag, Heart, Lightbulb, MessageCircle, Phone, RefreshCw, Repeat, Sparkles, Video, X, Ban,
+  CalendarClock, CalendarPlus, Check, ChevronDown, Clock, Flag, Heart, Lightbulb, MessageCircle, Phone, RefreshCw, Repeat, Sparkles, Video, X, Ban,
 } from "lucide-react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
@@ -81,6 +81,14 @@ export function MatchCard({ s, big }: { s: Suggestion; big?: boolean }) {
   };
   const p = s.profile;
   const first = firstName(p.name);
+  const [whyOpen, setWhyOpen] = React.useState(false);
+  // Their interests that matched one of yours — same threshold the matching route uses for a "real" match.
+  const matchedPairs = s.sharedPairs.filter((sp) => sp.similarity >= 0.28);
+  const shared = new Set(matchedPairs.map((sp) => sp.theirs));
+  const timeFit = s.availabilityScore >= 0.8 ? "lots of overlapping free time" : s.availabilityScore >= 0.3 ? "some overlapping free time" : "no shared free time yet";
+  const shortReason = shared.size
+    ? `${shared.size} shared ${shared.size === 1 ? "interest" : "interests"} · ${timeFit}`
+    : `${s.preferenceScore > 0.3 ? "Similar conversation topics" : "No shared interests yet"} · ${timeFit}`;
   return (
     <div className="flex flex-col rounded-[1.5rem] border border-ink-900/[0.06] bg-white p-5 shadow-soft transition hover:shadow-lift">
       <div className="flex items-start gap-4">
@@ -101,25 +109,63 @@ export function MatchCard({ s, big }: { s: Suggestion; big?: boolean }) {
           {p.bio && <p className="mt-2 line-clamp-2 text-sm text-ink-600">{p.bio}</p>}
         </div>
       </div>
-      <div className="mt-4 flex flex-wrap gap-1.5">
-        {s.interests.slice(0, 5).map((i) => (
-          <Badge key={i} variant={s.sharedPairs.some((sp) => sp.theirs === i && sp.similarity > 0.3) ? "default" : "muted"} className={big ? "text-sm" : ""}>{i}</Badge>
-        ))}
-      </div>
-      <div className="mt-4 rounded-2xl bg-sage-50 p-3.5">
-        <p className={cn("flex gap-2 text-sage-800", big ? "text-base" : "text-sm")}>
-          <Sparkles className="mt-0.5 size-4 shrink-0" />
-          <span>{s.explanation}</span>
-        </p>
-      </div>
-      {!big && (
-        <div className="mt-4 space-y-1.5">
-          <FactorBar label="Shared interests" value={s.semanticScore} color="var(--color-sage-500)" />
-          <FactorBar label="Availability" value={s.availabilityScore} color="var(--color-gold-400)" />
-          <FactorBar label="Topics" value={s.preferenceScore} color="var(--color-terra-300)" />
-          <FactorBar label="Pace fit" value={s.goalScore} color="var(--color-ink-400)" />
+      {/* Interests: blue (✓) = one of yours matched it; grey = their other interests */}
+      <div className="mt-4">
+        <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
+          <p className={cn("font-bold uppercase tracking-wider text-ink-500", big ? "text-sm" : "text-[11px]")}>Interests</p>
+          {shared.size > 0 && (
+            <p className={cn("flex items-center gap-1 text-ink-500", big ? "text-sm" : "text-[11px]")}>
+              <span className="inline-block size-2.5 rounded-full bg-sage-400" /> Shared with you
+            </p>
+          )}
         </div>
-      )}
+        <div className="flex flex-wrap gap-1.5">
+          {s.interests.slice(0, 5).map((i) => (
+            <Badge key={i} variant={shared.has(i) ? "default" : "muted"} className={big ? "text-sm" : ""}>
+              {shared.has(i) && <Check className="size-3" />}
+              {i}
+            </Badge>
+          ))}
+        </div>
+      </div>
+
+      {/* One short reason; the full reasoning is one tap away */}
+      <div className="mt-4 rounded-2xl bg-sage-50 p-3.5">
+        <p className={cn("flex gap-2 font-semibold text-sage-800", big ? "text-base" : "text-sm")}>
+          <Sparkles className="mt-0.5 size-4 shrink-0" />
+          <span>{shortReason}</span>
+        </p>
+        <button
+          type="button"
+          onClick={() => setWhyOpen(!whyOpen)}
+          aria-expanded={whyOpen}
+          className={cn("mt-2 inline-flex items-center gap-1 font-semibold text-sage-700 hover:text-sage-800", big ? "text-base" : "text-sm")}
+        >
+          {whyOpen ? "Hide reasoning" : "Why you match"}
+          <ChevronDown className={cn("size-4 transition-transform", whyOpen && "rotate-180")} />
+        </button>
+        {whyOpen && (
+          <div className={cn("mt-3 space-y-3 text-sage-800", big ? "text-base" : "text-sm")}>
+            {/* The pairs say it more clearly than the generated paragraph; show the paragraph only as a fallback. */}
+            {matchedPairs.length === 0 && <p>{s.explanation}</p>}
+            {matchedPairs.length > 0 && (
+              <ul className="space-y-1">
+                {matchedPairs.map((sp) => (
+                  <li key={`${sp.mine}-${sp.theirs}`} className="rounded-xl bg-white/70 px-3 py-2">
+                    Your “{sp.mine}” ↔ {first}&apos;s “{sp.theirs}”
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div className="space-y-1.5">
+              <FactorBar label="Shared interests" value={s.semanticScore} color="var(--color-sage-500)" />
+              <FactorBar label="Availability" value={s.availabilityScore} color="var(--color-gold-400)" />
+              <FactorBar label="Topics" value={s.preferenceScore} color="var(--color-terra-300)" />
+              <FactorBar label="Pace fit" value={s.goalScore} color="var(--color-ink-400)" />
+            </div>
+          </div>
+        )}
+      </div>
       <div className="mt-5 flex gap-2">
         {s.requestState === "none" && (
           <Button className="flex-1" size={big ? "lg" : "default"} variant={big ? "terra" : "default"} disabled={busy} onClick={() => run(() => send({ toUserId: p.userId }), `Request sent to ${first}!`)}>
@@ -157,7 +203,7 @@ export function MatchList({ big }: { big?: boolean }) {
       ) : suggestions.length === 0 ? (
         <EmptyState icon={<Heart />} title="No new matches right now" body="Everyone you might click with is already your buddy — or new people are still joining. Check back soon!" />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">{suggestions.map((s) => <MatchCard key={s._id} s={s} big={big} />)}</div>
+        <div className="grid items-start gap-4 md:grid-cols-2">{suggestions.map((s) => <MatchCard key={s._id} s={s} big={big} />)}</div>
       )}
     </div>
   );
