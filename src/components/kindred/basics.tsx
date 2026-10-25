@@ -17,6 +17,26 @@ export function Logo({ className, size = "md" }: { className?: string; size?: "s
   );
 }
 
+export function Pip({ className, size = "md" }: { className?: string; size?: "sm" | "md" | "lg" }) {
+  const dims = { sm: "size-16", md: "size-24", lg: "size-36" }[size];
+  return (
+    <div className={cn("relative inline-flex shrink-0 items-center justify-center", dims, className)} role="img" aria-label="Pip the Kindred lamb">
+      <svg viewBox="0 0 120 120" className="size-full" aria-hidden="true">
+        <circle cx="60" cy="63" r="39" fill="#fff" stroke="#111d3a" strokeWidth="4" />
+        <circle cx="34" cy="40" r="14" fill="#fff" stroke="#111d3a" strokeWidth="4" />
+        <circle cx="86" cy="40" r="14" fill="#fff" stroke="#111d3a" strokeWidth="4" />
+        <path d="M43 60c0-18 8-28 17-28s17 10 17 28v23c0 11-8 19-17 19s-17-8-17-19Z" fill="#d6ecff" stroke="#111d3a" strokeWidth="4" />
+        <circle cx="54" cy="60" r="3.5" fill="#111d3a" />
+        <circle cx="66" cy="60" r="3.5" fill="#111d3a" />
+        <path d="M55 72c3 3 7 3 10 0" fill="none" stroke="#111d3a" strokeWidth="3" strokeLinecap="round" />
+        <path d="M44 87 32 96M76 87l12 9" stroke="#111d3a" strokeWidth="4" strokeLinecap="round" />
+        <circle cx="24" cy="96" r="6" fill="#5fc088" stroke="#111d3a" strokeWidth="3" />
+        <circle cx="96" cy="96" r="6" fill="#5fc088" stroke="#111d3a" strokeWidth="3" />
+      </svg>
+    </div>
+  );
+}
+
 export function PersonAvatar({
   avatar,
   color,

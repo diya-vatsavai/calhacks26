@@ -10,7 +10,7 @@ import {
 import { api } from "../../../convex/_generated/api";
 import { cn } from "@/lib/utils";
 import { useApi } from "@/lib/api";
-import { Logo, PageLoader, PersonAvatar } from "./basics";
+import { Logo, PageLoader, PersonAvatar, Pip } from "./basics";
 
 export type Viewer = NonNullable<ReturnType<typeof useViewer>>;
 
@@ -85,10 +85,13 @@ export function StudentShell({ viewer, children }: { viewer: Viewer; children: R
   const path = usePathname();
   const p = viewer.profile!;
   return (
-    <div className="min-h-screen bg-cream-100">
+    <div className="student min-h-screen bg-[#e5f1fe]">
       <MossAutoSync />
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-ink-900/[0.06] bg-cream-50/80 px-4 py-6 backdrop-blur lg:flex">
-        <Link href="/student" className="px-2"><Logo /></Link>
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-[#111d3a]/10 bg-white/75 px-4 py-6 backdrop-blur lg:flex">
+        <Link href="/student" className="px-2"><Logo className="text-[#111d3a]" /></Link>
+        <div className="mt-5 flex items-center gap-2 rounded-2xl bg-[#fff7d1] px-3 py-2 text-sm font-semibold text-[#111d3a]">
+          <Pip size="sm" className="size-10" /><span>Hi, {p.name.split(" ")[0]}!</span>
+        </div>
         <nav className="mt-8 flex flex-1 flex-col gap-1">
           {studentNav.map((n) => {
             const active = n.href === "/student" ? path === n.href : path.startsWith(n.href);
@@ -98,10 +101,10 @@ export function StudentShell({ viewer, children }: { viewer: Viewer; children: R
                 href={n.href}
                 className={cn(
                   "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition",
-                  active ? "bg-white text-ink-900 shadow-soft" : "text-ink-600 hover:bg-white/60 hover:text-ink-900",
+                  active ? "bg-[#111d3a] text-white shadow-soft" : "text-[#314267] hover:bg-white hover:text-[#111d3a]",
                 )}
               >
-                <n.icon className={cn("size-[18px]", active ? "text-sage-600" : "")} />
+                <n.icon className={cn("size-[18px]", active ? "text-[#9ae2b6]" : "")} />
                 {n.label}
               </Link>
             );
@@ -116,18 +119,18 @@ export function StudentShell({ viewer, children }: { viewer: Viewer; children: R
         </div>
         <SignOut className="mt-3 px-3" />
       </aside>
-      <header className="sticky top-0 z-20 flex items-center justify-between border-b border-ink-900/[0.06] bg-cream-50/90 px-4 py-3 backdrop-blur lg:hidden">
+      <header className="sticky top-0 z-20 flex items-center justify-between border-b border-[#111d3a]/10 bg-white/90 px-4 py-3 backdrop-blur lg:hidden">
         <Logo size="sm" />
         <SignOut label="" />
       </header>
       <main className="px-4 pb-28 pt-6 sm:px-8 lg:ml-64 lg:pb-12 lg:pt-10">
         <div className="mx-auto max-w-6xl animate-rise">{children}</div>
       </main>
-      <nav className="fixed inset-x-0 bottom-0 z-30 flex justify-around border-t border-ink-900/[0.06] bg-cream-50/95 px-2 py-2 backdrop-blur lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex justify-around border-t border-[#111d3a]/10 bg-white/95 px-2 py-2 backdrop-blur lg:hidden">
         {studentNav.slice(0, 5).map((n) => {
           const active = n.href === "/student" ? path === n.href : path.startsWith(n.href);
           return (
-            <Link key={n.href} href={n.href} className={cn("flex flex-col items-center gap-0.5 rounded-lg px-2 py-1 text-[10px] font-semibold", active ? "text-sage-700" : "text-ink-500")}>
+            <Link key={n.href} href={n.href} className={cn("flex flex-col items-center gap-0.5 rounded-lg px-2 py-1 text-[10px] font-semibold", active ? "text-[#111d3a]" : "text-[#314267]")}>
               <n.icon className="size-5" />
               {n.label.split(" ")[0]}
             </Link>
