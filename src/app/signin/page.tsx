@@ -8,7 +8,7 @@ import { HeartHandshake, Mic2, ShieldCheck } from "lucide-react";
 import { api } from "../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
-import { Logo, Spinner } from "@/components/kindred/basics";
+import { Logo, Pip, Spinner } from "@/components/kindred/basics";
 import { homeFor } from "@/components/kindred/shells";
 import { cn } from "@/lib/utils";
 import { convexErrorMessage } from "@/lib/api";
@@ -71,14 +71,15 @@ function SignInInner() {
 
   const senior = role === "senior" && mode === "signUp";
   return (
-    <div className="grid min-h-screen lg:grid-cols-2">
-      <div className={cn("relative hidden flex-col justify-between overflow-hidden p-12 lg:flex", senior ? "bg-terra-100" : "bg-sage-100")}>
+    <div className="student grid min-h-screen bg-[#e5f1fe] lg:grid-cols-2">
+      <div className={cn("relative hidden flex-col justify-between overflow-hidden p-12 lg:flex", senior ? "bg-[#fff7d1]" : "bg-[#d6ecff]")}>
         <Link href="/"><Logo /></Link>
         <div>
-          <p className="font-display text-4xl font-semibold leading-tight">
+          <Pip size="lg" className="mb-5" />
+          <p className="text-5xl font-bold leading-tight text-[#111d3a]">
             {senior ? "Your stories deserve a listener." : "The best way to learn a language is with a friend."}
           </p>
-          <p className="mt-4 max-w-md text-lg text-ink-600">
+          <p className="mt-4 max-w-md text-lg text-[#314267]">
             {senior
               ? "Talk with curious, kind people from around the world — at your own pace, from your own home."
               : "Practice with someone who has a lifetime of stories to share, and get personal coaching after every call."}
