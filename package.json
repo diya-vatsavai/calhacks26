@@ -10,7 +10,10 @@
     "dev:convex": "convex dev",
     "setup:env": "node scripts/setup-convex-env.mjs",
     "seed": "convex run seed:run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "setup:env:prod": "node scripts/setup-convex-env.mjs --prod",
+    "seed:prod": "convex run --prod seed:run",
+    "deploy:convex": "convex deploy -y"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.3.0",
@@ -49,5 +52,8 @@
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=20.9"
   }
 }

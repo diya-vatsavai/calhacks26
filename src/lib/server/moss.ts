@@ -165,3 +165,12 @@ export async function listIndexes() {
   const list = await state.client.listIndexes();
   return list.map((i) => ({ name: i.name, status: i.status, docCount: i.docCount, model: i.model?.id ?? null }));
 }
+
+/** Loads an existing index (and the embedding model) ahead of the first request. */
+export async function warmup(indexName: string) {
+  if (!state.client) return "Moss not configured";
+  if (!(await indexReady(indexName))) return `index "${indexName}" not created yet (built on first use)`;
+  const t0 = Date.now();
+  await serial(() => (state.loaded.has(indexName) ? Promise.resolve() : load(indexName)));
+  return `loaded "${indexName}" in ${Date.now() - t0}ms`;
+}
