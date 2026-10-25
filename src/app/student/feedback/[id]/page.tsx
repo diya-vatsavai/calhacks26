@@ -193,7 +193,7 @@ export default function FeedbackDetail({ params }: { params: Promise<{ id: strin
           </Details>
         </Section>
 
-        <Section icon={<Gauge className="size-5 text-[#6bb1f3]" />} title="Fluency & pacing" score={i.fluency.score} color="#6bb1f3">
+        <Section icon={<Gauge className="size-5 text-[#3f87d2]" />} title="Fluency & pacing" score={i.fluency.score} color="#3f87d2">
           <div className="grid grid-cols-3 gap-2 text-center">
             {(
               [
@@ -216,13 +216,13 @@ export default function FeedbackDetail({ params }: { params: Promise<{ id: strin
           </Details>
         </Section>
 
-        <Section icon={<Users className="size-5" style={{ color: NAVY }} />} title="Participation" score={i.participation.score} color={NAVY}>
+        <Section icon={<Users className="size-5 text-[#e3b23c]" />} title="Participation" score={i.participation.score} color="#e3b23c">
           <p className="text-sm" style={{ color: NAVY }}>
             You spoke <b className="text-lg">{pct(i.participation.share)}</b> of the words.
           </p>
           <Details>
             <p>{i.participation.notes}</p>
-            <div className="rounded-xl bg-[#e5f1fe] p-3">
+            <div className="rounded-xl bg-[#fff7d1] p-3">
               <p className="font-bold" style={{ color: NAVY }}>
                 Pronunciation
               </p>
