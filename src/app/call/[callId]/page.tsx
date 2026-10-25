@@ -75,7 +75,6 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
   // Real width/height ratio of each camera (phones are tall, laptops are wide) — used to show video uncropped.
   const [remoteAspect, setRemoteAspect] = useState<number | null>(null);
   const [localAspect, setLocalAspect] = useState<number | null>(null);
-  const remoteBlurEl = useRef<HTMLVideoElement>(null);
   const [consent, setConsent] = useState(false);
   const [recording, setRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
@@ -174,8 +173,7 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
       conn.ontrack = (e) => {
         const [stream] = e.streams;
         if (remoteVideoEl.current) remoteVideoEl.current.srcObject = stream;
-        if (remoteBlurEl.current) remoteBlurEl.current.srcObject = stream;
-        if (remoteAudioEl.current) remoteAudioEl.current.srcObject = stream;
+            if (remoteAudioEl.current) remoteAudioEl.current.srcObject = stream;
         setRemoteVideo(stream.getVideoTracks().length > 0);
       };
       conn.onconnectionstatechange = () => {
@@ -392,7 +390,7 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
   }
 
   return (
-    <div className={cn("flex min-h-screen flex-col bg-[#111d3a] text-cream-50", senior && "senior")}>
+    <div className={cn("flex min-h-screen flex-col bg-[#111d3a] text-cream-50 md:h-dvh md:min-h-0 md:overflow-hidden", senior && "senior")}>
       <header className="flex flex-wrap items-center gap-3 px-5 py-4">
         <PersonAvatar avatar={buddy?.avatar} color={buddy?.avatarColor} name={buddy?.name} size="sm" />
         <div className="flex-1">
@@ -409,17 +407,8 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
         </div>
       </header>
 
-      <div className="relative flex flex-1 flex-col gap-4 px-5 pb-4 md:flex-row">
+      <div className="relative flex flex-1 flex-col gap-4 px-5 pb-4 md:min-h-0 md:flex-row">
         <div className="relative flex min-h-[45vh] flex-1 items-center justify-center overflow-hidden rounded-[1.75rem] bg-black/40">
-          {/* Blurred copy fills the space around a tall phone video on a wide screen (and vice versa) — no black bars, no cropping */}
-          <video
-            ref={remoteBlurEl}
-            autoPlay
-            playsInline
-            muted
-            aria-hidden
-            className={cn("pointer-events-none absolute inset-0 size-full scale-110 object-cover opacity-60 blur-2xl", (!remoteVideo || !other?.camOn) && "hidden")}
-          />
           <video
             ref={remoteVideoEl}
             autoPlay
@@ -473,6 +462,7 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
           )}
         </div>
         {!isSenior && conversationId && (
+          <div className="shrink-0 md:min-h-0 md:overflow-y-auto">
           <LambPanel
             lamb={lamb}
             buddyName={buddy?.name ?? ""}
@@ -482,6 +472,7 @@ function CallRoom({ callId }: { callId: Id<"scheduledCalls"> }) {
             onToggleCaptions={toggleCaptions}
             captionsStatus={captions.status}
           />
+          </div>
         )}
       </div>
 
